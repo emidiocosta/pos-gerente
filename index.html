@@ -43,9 +43,12 @@
   .ack-box { background: #1e222b; border: 1px solid #434c5e; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 12px; }
   .ack-title { color: #88c0d0; font-weight: 700; margin-bottom: 3px; }
   .ack-val { color: #a3be8c; font-weight: 700; }
-  .hist-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .hist-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
   .hist-title { font-size: 13px; font-weight: 800; color: #88c0d0; }
+  .hist-actions { display: flex; gap: 6px; }
   .btn-mini { background: #3b4252; color: #eceff4; border: none; border-radius: 7px; padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .btn-mini-danger { background: #bf616a; color: #ffffff; }
+  .tech-clear-box { display: none; background: #242933; border: 1px solid #bf616a88; border-radius: 9px; padding: 10px; margin-bottom: 10px; }
   .hist-list { max-height: 290px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
   .hist-item { background: #242933; border: 1px solid #3b4252; border-left: 4px solid #ebcb8b; border-radius: 8px; padding: 9px 10px; font-size: 12px; }
   .hist-item.urgent { border-left-color: #bf616a; }
@@ -126,8 +129,18 @@
   <div id="histBox" class="hist-panel">
     <div class="hist-header">
       <span class="hist-title">📋 Mensagens & Horas de Leitura</span>
-      <button class="btn-mini" onclick="pollAckHistory(true)">🔄 Atualizar</button>
+      <div class="hist-actions">
+        <button class="btn-mini" onclick="pollAckHistory(true)">🔄 Atualizar</button>
+        <button class="btn-mini btn-mini-danger" onclick="toggleTechClearBox()">🛠️ Apagar Histórico</button>
+      </div>
     </div>
+
+    <div id="techClearBox" class="tech-clear-box">
+      <div style="font-size:12px;color:#ff8b8b;font-weight:700;margin-bottom:6px;">🛠️ Exclusivo para Técnico: Apagar Todo o Histórico</div>
+      <input type="password" id="techPinInput" placeholder="Introduza o PIN Técnico..." style="padding:9px;font-size:14px;margin-bottom:8px;">
+      <button class="btn" style="background:#bf616a;color:#fff;margin-top:0;padding:10px;font-size:13px;" onclick="sendTechClearHistory()">🗑️ Confirmar Limpeza Total do Histórico</button>
+    </div>
+
     <div id="histList" class="hist-list">
       <div style="color:#81a1c1;font-size:12px;text-align:center;padding:12px;">A carregar histórico de confirmações...</div>
     </div>
@@ -348,9 +361,44 @@ function toggleHistoryBox() {
   }
 }
 
+function toggleTechClearBox() {
+  const box = document.getElementById('techClearBox');
+  box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+}
+
 async function sha256Hex(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function sendTechClearHistory() {
+  const st = document.getElementById('status');
+  const techPin = document.getElementById('techPinInput').value.trim();
+  if (!channel) return;
+  if (!techPin) {
+    st.className = 'status err';
+    st.textContent = '❌ Introduza o PIN Técnico para apagar o histórico.';
+    return;
+  }
+  try {
+    const ts = Math.floor(Date.now() / 1000).toString();
+    const sigStr = channel + '|clear_history||' + ts + '|' + techPin;
+    const sig = await sha256Hex(sigStr);
+    const packet = { action: 'clear_history', text: '', ts, sig };
+    const r = await fetch('https://ntfy.sh/' + encodeURIComponent(channel), {
+      method: 'POST',
+      body: JSON.stringify(packet)
+    });
+    if (r.ok) {
+      document.getElementById('techPinInput').value = '';
+      document.getElementById('techClearBox').style.display = 'none';
+      st.className = 'status ok';
+      st.textContent = '⏳ A validar PIN Técnico e limpar histórico no POS...';
+    }
+  } catch (e) {
+    st.className = 'status err';
+    st.textContent = '❌ Erro de ligação: ' + e.message;
+  }
 }
 
 async function sendAction(action, silent = false) {
