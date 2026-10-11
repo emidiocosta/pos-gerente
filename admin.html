@@ -261,9 +261,59 @@ async function xorCrypt(dataBytes, keyStr) {
 const DEVICE_AUTH_SALT = "BD_ADMIN_DEVICE_AUTH_2026_9F8E";
 const APP_VAULT_KEY_MGR = "BD#PosApp$2026!Key";
 
-async function adminDecideDevice(ch, devId, devName, approve) {
+function loadFleetPosMap() {
+  let map = { "pos_xd_be487236ba3240": "Restaurante-master" };
+  try {
+    const raw = localStorage.getItem("pos_admin_fleet_map");
+    if (raw) Object.assign(map, JSON.parse(raw));
+  } catch (e) {}
+  return map;
+}
+
+function registerFleetPos(channel, hostname) {
+  if (!channel || !hostname || !channel.startsWith("pos_xd_")) return;
+  const map = loadFleetPosMap();
+  if (map[channel] !== hostname) {
+    map[channel] = hostname;
+    try {
+      localStorage.setItem("pos_admin_fleet_map", JSON.stringify(map));
+    } catch (e) {}
+    refreshAdminPosSelectors();
+  }
+}
+
+function getPosOptionsHtml(selectedChannel = "") {
+  const map = loadFleetPosMap();
+  return Object.entries(map).map(([ch, name]) =>
+    `<option value="${ch}" data-posname="${name}" ${ch === selectedChannel ? "selected" : ""}>🏪 ${name} (${ch.slice(0, 12)})</option>`
+  ).join("");
+}
+
+function refreshAdminPosSelectors() {
+  const manualSel = document.getElementById("manualPosSelect");
+  if (manualSel) {
+    const cur = manualSel.value;
+    manualSel.innerHTML = getPosOptionsHtml(cur);
+  }
+}
+
+function addManualPosToFleet() {
+  const nameEl = document.getElementById("newPosHost");
+  const chEl = document.getElementById("newPosChan");
+  if (!nameEl || !chEl) return;
+  const n = nameEl.value.trim();
+  const c = chEl.value.trim();
+  if (!n || !c) return;
+  registerFleetPos(c, n);
+  nameEl.value = "";
+  chEl.value = "";
+}
+
+async function adminDecideDevice(ch, posName, devId, devName, approve) {
   const st = document.getElementById("status");
+  const map = loadFleetPosMap();
   const targetCh = (ch || "pos_xd_be487236ba3240").trim();
+  const targetPosName = (posName || map[targetCh] || "POS Restaurante").trim();
   const cleanId = (devId || "").trim().toUpperCase();
   if (!cleanId) {
     if (st) {
@@ -275,7 +325,7 @@ async function adminDecideDevice(ch, devId, devName, approve) {
   if (st) {
     st.className = "status ok";
     st.textContent = approve
-      ? "⏳ A autorizar telemóvel " + cleanId + "..."
+      ? "⏳ A autorizar " + cleanId + " no POS " + targetPosName + "..."
       : "⏳ A revogar/bloquear telemóvel " + cleanId + "...";
   }
   try {
@@ -286,31 +336,44 @@ async function adminDecideDevice(ch, devId, devName, approve) {
       ? await sha256Hex(`${targetCh}|DEV_APPROVED|${cleanId}|${DEVICE_AUTH_SALT}`)
       : "";
 
+    const updatePacket = {
+      device_auth_update: {
+        device_id: cleanId,
+        device_name: devName || cleanId,
+        channel: targetCh,
+        pos_name: targetPosName,
+        approved: approve,
+        device_token: devToken,
+        app_vault_key: approve ? APP_VAULT_KEY_MGR : ""
+      },
+      revoked_device_id: approve ? "" : cleanId,
+      status: approve ? "Telemóvel Autorizado no POS " + targetPosName : "Telemóvel Revogado pelo Admin",
+      ack: (approve ? "Autorizado no POS " + targetPosName : "Revogado") + " pelo Administrador Central"
+    };
+
+    // 1. Enviar para a caixa de entrada exclusiva daquele telemóvel (funciona mesmo sem QR Code prévio!)
+    const devInbox = "pos_bd_dev_" + cleanId.replace(/[^A-Z0-9]/gi, "").toLowerCase();
+    await fetch("https://ntfy.sh/" + encodeURIComponent(devInbox), {
+      method: "POST",
+      body: JSON.stringify(updatePacket)
+    });
+
+    // 2. Enviar ordem assinada para o POS escolhido
     await fetch("https://ntfy.sh/" + encodeURIComponent(targetCh), {
       method: "POST",
       body: JSON.stringify({ action, device_id: cleanId, device_name: devName || cleanId, ts, sig })
     });
 
+    // 3. Publicar também no canal ACK do POS
     await fetch("https://ntfy.sh/" + encodeURIComponent(targetCh + "_ack"), {
       method: "POST",
-      body: JSON.stringify({
-        device_auth_update: {
-          device_id: cleanId,
-          device_name: devName || cleanId,
-          approved: approve,
-          device_token: devToken,
-          app_vault_key: approve ? APP_VAULT_KEY_MGR : ""
-        },
-        revoked_device_id: approve ? "" : cleanId,
-        status: approve ? "Telemóvel Autorizado pelo Admin" : "Telemóvel Revogado pelo Admin",
-        ack: (approve ? "Autorizado" : "Revogado") + " pelo Administrador Central"
-      })
+      body: JSON.stringify(updatePacket)
     });
 
     if (st) {
       st.className = approve ? "status ok" : "status err";
       st.textContent = approve
-        ? "✅ Telemóvel " + cleanId + " (" + (devName || "Gerente") + ") AUTORIZADO! A App do gerente já desbloqueou e abre direto sem pedir password."
+        ? "✅ Telemóvel " + cleanId + " (" + (devName || "Gerente") + ") AUTORIZADO e associado ao POS '" + targetPosName + "'!"
         : "🚫 Telemóvel " + cleanId + " BLOQUEADO / REVOGADO com sucesso!";
     }
   } catch (e) {
@@ -328,9 +391,11 @@ function injectDeviceControlPanel() {
   box.id = "devCtrlBox";
   box.className = "section-box";
   box.innerHTML = `
-    <div class="section-title">📱 Controlo Central de Telemóveis dos Gerentes (Autorizar / Revogar)</div>
-    <div class="section-hint">Quando um gerente pede acesso na App, aparece abaixo com botões de 1 toque. Também pode autorizar ou bloquear manualmente qualquer ID de telemóvel aqui:</div>
-    <div class="grid2">
+    <div class="section-title">📱 Controlo Central de Telemóveis & Associação Multi-POS</div>
+    <div class="section-hint">Todos os seus POS registam-se automaticamente na lista abaixo. Quando um gerente pede acesso de qualquer telemóvel, escolha a qual POS o quer associar (ou autorize o mesmo ID para vários POS):</div>
+    <label style="margin-top:4px;">🏪 1. Escolher Terminal POS da Frota</label>
+    <select id="manualPosSelect">${getPosOptionsHtml()}</select>
+    <div class="grid2" style="margin-top:6px;">
       <div>
         <label style="margin-top:2px;">ID do Telemóvel (MGR-...)</label>
         <input type="text" id="manualDevId" placeholder="Ex: MGR-8F4A-29C1" style="text-transform:uppercase;font-family:monospace;font-weight:800;">
@@ -341,8 +406,8 @@ function injectDeviceControlPanel() {
       </div>
     </div>
     <div class="grid2" style="margin-top:8px;">
-      <button class="btn" style="margin-top:0;padding:10px;font-size:12.5px;background:#a3be8c;color:#171a21;" onclick="adminDecideDevice('pos_xd_be487236ba3240', document.getElementById('manualDevId').value, document.getElementById('manualDevName').value, true)">✅ AUTORIZAR TELEMÓVEL</button>
-      <button class="btn" style="margin-top:0;padding:10px;font-size:12.5px;background:#bf616a;color:#ffffff;" onclick="adminDecideDevice('pos_xd_be487236ba3240', document.getElementById('manualDevId').value, document.getElementById('manualDevName').value, false)">🚫 REVOGAR / BLOQUEAR</button>
+      <button class="btn" style="margin-top:0;padding:10px;font-size:12px;background:#a3be8c;color:#171a21;" onclick="const s=document.getElementById('manualPosSelect'); adminDecideDevice(s.value, s.options[s.selectedIndex].getAttribute('data-posname'), document.getElementById('manualDevId').value, document.getElementById('manualDevName').value, true)">✅ AUTORIZAR NESTE POS</button>
+      <button class="btn" style="margin-top:0;padding:10px;font-size:12px;background:#bf616a;color:#ffffff;" onclick="const s=document.getElementById('manualPosSelect'); adminDecideDevice(s.value, s.options[s.selectedIndex].getAttribute('data-posname'), document.getElementById('manualDevId').value, document.getElementById('manualDevName').value, false)">🚫 REVOGAR / BLOQUEAR</button>
     </div>
   `;
   ackPanel.parentNode.insertBefore(box, ackPanel);
@@ -367,6 +432,9 @@ async function downloadBackupFile(url, fname) {
 }
 
 function addAckLog(msg) {
+  if (msg && msg.pos_channel && msg.hostname) {
+    registerFleetPos(msg.pos_channel, msg.hostname);
+  }
   injectDeviceControlPanel();
   ackLogs.unshift(msg);
   ackLogs = ackLogs.slice(0, 30);
@@ -374,7 +442,7 @@ function addAckLog(msg) {
   const cnt = document.getElementById("ackCount");
   if (!box || !cnt) return;
   cnt.textContent = ackLogs.length + " resposta(s)";
-  box.innerHTML = ackLogs.map(m => {
+  box.innerHTML = ackLogs.map((m, idx) => {
     if (m.error) {
       return `<div class="ack-item err-item"><b>❌ ${m.hostname || 'POS'} (${m.ip || ''})</b> — ${m.error} <span style="float:right;color:#81a1c1;">${m.ts || ''}</span></div>`;
     }
@@ -387,12 +455,17 @@ function addAckLog(msg) {
     if (m.device_request && m.device_request.device_id) {
       const dr = m.device_request;
       const safeName = String(dr.device_name || "Gerente").replace(/'/g, "");
-      const safeCh = String(dr.channel || "pos_xd_be487236ba3240").replace(/'/g, "");
+      const safeCh = String(dr.channel || "").replace(/'/g, "");
       const safeId = String(dr.device_id).replace(/'/g, "");
+      const selId = "reqPosSel_" + idx;
       devBtns = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
-          <button onclick="adminDecideDevice('${safeCh}', '${safeId}', '${safeName}', true)" style="background:#a3be8c;color:#171a21;border:none;border-radius:7px;padding:9px;font-weight:800;font-size:12px;cursor:pointer;">✅ AUTORIZAR (${safeId})</button>
-          <button onclick="adminDecideDevice('${safeCh}', '${safeId}', '${safeName}', false)" style="background:#bf616a;color:#ffffff;border:none;border-radius:7px;padding:9px;font-weight:800;font-size:12px;cursor:pointer;">🚫 BLOQUEAR (${safeId})</button>
+        <div style="background:#171a21;padding:8px;border-radius:8px;margin-top:8px;border:1px solid #5e81ac66;">
+          <div style="font-size:11px;color:#ebcb8b;font-weight:700;margin-bottom:4px;">🏪 Associar telemóvel <b>${safeId}</b> a qual Terminal POS?</div>
+          <select id="${selId}" style="margin-bottom:6px;padding:7px;font-size:12.5px;font-weight:700;">${getPosOptionsHtml(safeCh)}</select>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button onclick="const s=document.getElementById('${selId}'); adminDecideDevice(s.value, s.options[s.selectedIndex].getAttribute('data-posname'), '${safeId}', '${safeName}', true)" style="background:#a3be8c;color:#171a21;border:none;border-radius:7px;padding:9px;font-weight:800;font-size:11.5px;cursor:pointer;">✅ AUTORIZAR NESTE POS</button>
+            <button onclick="const s=document.getElementById('${selId}'); adminDecideDevice(s.value, s.options[s.selectedIndex].getAttribute('data-posname'), '${safeId}', '${safeName}', false)" style="background:#bf616a;color:#ffffff;border:none;border-radius:7px;padding:9px;font-weight:800;font-size:11.5px;cursor:pointer;">🚫 BLOQUEAR (${safeId})</button>
+          </div>
         </div>
       `;
     }
