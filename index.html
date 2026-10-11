@@ -13,35 +13,54 @@
 <title>Gerência POS - Quadro da Equipa</title>
 <style>
   * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  body { margin: 0; padding: 14px; background: #1e222b; color: #eceff4; }
-  .card { max-width: 500px; margin: 0 auto; background: #262b36; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); border: 1px solid #3b4252; }
+  body { margin: 0; padding: 12px; background: #1e222b; color: #eceff4; }
+  .card { max-width: 520px; margin: 0 auto; background: #262b36; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); border: 1px solid #3b4252; }
   .top-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-  h1 { font-size: 19px; margin: 0; color: #ebcb8b; }
-  .badge { background: #1f242d; color: #a3be8c; padding: 4px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; border: 1px solid #a3be8c; white-space: nowrap; }
-  .sub { font-size: 12px; color: #88c0d0; margin-bottom: 12px; }
+  .title-wrap { display: flex; align-items: center; gap: 8px; }
+  h1 { font-size: 18px; margin: 0; color: #ebcb8b; }
+  .bd-header-logo { height: 22px; width: auto; opacity: 0.85; }
+  .sub-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  .sub { font-size: 12px; color: #88c0d0; }
+  .badge { background: #1f242d; color: #a3be8c; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; border: 1px solid #a3be8c88; white-space: nowrap; }
   label { display: block; font-size: 12px; font-weight: 700; color: #d8dee9; margin-bottom: 5px; margin-top: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
   input, textarea, select { width: 100%; background: #191d24; border: 1px solid #434c5e; color: #ffffff; border-radius: 10px; padding: 11px; font-size: 15px; outline: none; }
   input:focus, textarea:focus, select:focus { border-color: #88c0d0; }
-  textarea { min-height: 95px; resize: vertical; line-height: 1.4; font-weight: 600; }
+  textarea { min-height: 92px; resize: vertical; line-height: 1.4; font-weight: 600; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .check-row { display: flex; align-items: center; gap: 10px; background: #1e222b; padding: 11px; border-radius: 10px; margin-top: 12px; border: 1px solid #ebcb8b55; }
   .check-row input { width: 20px; height: 20px; margin: 0; }
   .check-row span { font-size: 13px; font-weight: 600; color: #eceff4; }
-  .btn { width: 100%; border: none; border-radius: 11px; padding: 14px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 12px; transition: opacity 0.15s, transform 0.1s; }
+  .btn { width: 100%; border: none; border-radius: 11px; padding: 14px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; transition: opacity 0.15s, transform 0.1s; }
   .btn:active { opacity: 0.85; transform: scale(0.99); }
   .btn-install { background: linear-gradient(135deg, #2980b9, #3498db); color: #fff; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(52,152,219,0.35); }
-  .btn-send { background: #a3be8c; color: #1e222b; }
-  .btn-clear { background: #bf616a; color: #fff; margin-top: 8px; padding: 11px; font-size: 13px; }
-  .btn-pin-toggle { background: #3b4252; color: #ebcb8b; margin-top: 10px; padding: 10px; font-size: 12px; font-weight: 700; }
-  .pin-panel { display: none; margin-top: 10px; padding: 12px; border-radius: 12px; background: #1b1f28; border: 1px solid #ebcb8b66; }
+  .btn-send { background: #a3be8c; color: #1e222b; margin-top: 12px; }
+  .btn-row-sec { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .btn-hist { background: #5e81ac; color: #ffffff; margin-top: 0; padding: 11px 8px; font-size: 12px; }
+  .btn-clear { background: #bf616a; color: #fff; margin-top: 0; padding: 11px 8px; font-size: 12px; }
+  .btn-pin-toggle { background: #3b4252; color: #ebcb8b; margin-top: 8px; padding: 10px; font-size: 12px; font-weight: 700; }
+  .pin-panel, .hist-panel { display: none; margin-top: 10px; padding: 12px; border-radius: 12px; background: #1b1f28; border: 1px solid #5e81ac88; }
+  .pin-panel { border-color: #ebcb8b66; }
   .ack-box { background: #1e222b; border: 1px solid #434c5e; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 12px; }
   .ack-title { color: #88c0d0; font-weight: 700; margin-bottom: 3px; }
   .ack-val { color: #a3be8c; font-weight: 700; }
+  .hist-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .hist-title { font-size: 13px; font-weight: 800; color: #88c0d0; }
+  .btn-mini { background: #3b4252; color: #eceff4; border: none; border-radius: 7px; padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .hist-list { max-height: 290px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .hist-item { background: #242933; border: 1px solid #3b4252; border-left: 4px solid #ebcb8b; border-radius: 8px; padding: 9px 10px; font-size: 12px; }
+  .hist-item.urgent { border-left-color: #bf616a; }
+  .hist-item.normal { border-left-color: #a3be8c; }
+  .hist-meta { display: flex; justify-content: space-between; color: #81a1c1; font-size: 11px; margin-bottom: 4px; font-weight: 600; }
+  .hist-text { color: #ffffff; font-weight: 700; font-size: 13px; margin-bottom: 5px; white-space: pre-wrap; }
+  .hist-ack { font-size: 11px; font-weight: 700; padding: 4px 7px; border-radius: 6px; display: inline-block; }
+  .hist-ack.ok { background: #1e3a24; color: #a3be8c; border: 1px solid #a3be8c55; }
+  .hist-ack.wait { background: #3a321e; color: #ebcb8b; border: 1px solid #ebcb8b55; }
   .status { margin-top: 12px; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; display: none; text-align: center; }
   .ok { background: #1e4620; color: #a3be8c; border: 1px solid #a3be8c; display: block; }
   .err { background: #4a1c1c; color: #ff8b8b; border: 1px solid #bf616a; display: block; }
   .guide-modal { display: none; margin-bottom: 12px; padding: 13px; border-radius: 12px; background: #161920; border: 1px solid #88c0d0; font-size: 13px; line-height: 1.5; color: #d8dee9; }
-  .footer { text-align: center; font-size: 11px; color: #81a1c1; margin-top: 14px; }
+  .footer { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #7b88a1; margin-top: 16px; padding-top: 10px; border-top: 1px solid #323846; }
+  .bd-footer-logo { height: 15px; width: auto; opacity: 0.65; }
 </style>
 </head>
 <body>
@@ -52,13 +71,18 @@
   <div id="installGuide" class="guide-modal"></div>
 
   <div class="top-row">
-    <h1>📌 Avisos à Equipa</h1>
-    <span class="badge">🔒 P2P Encriptado</span>
+    <div class="title-wrap">
+      <h1>📌 Avisos à Equipa</h1>
+    </div>
+    <img src="./bd-logo.png" alt="Between Dimensions" class="bd-header-logo">
   </div>
-  <div class="sub" id="posTitle">A ligar ao terminal POS...</div>
+  <div class="sub-row">
+    <div class="sub" id="posTitle">A ligar ao terminal POS...</div>
+    <span class="badge">🔒 P2P SHA-256</span>
+  </div>
 
   <div class="ack-box">
-    <div class="ack-title">📡 Estado em Tempo Real no POS:</div>
+    <div class="ack-title">📡 Última Confirmação no POS:</div>
     <div class="ack-val" id="ackText">Pronto para enviar instruções ao POS</div>
   </div>
 
@@ -93,7 +117,22 @@
   </label>
 
   <button class="btn btn-send" onclick="sendAction('publish')">🚀 TRANSMITIR PARA O ECRÃ DO POS</button>
-  <button class="btn btn-clear" onclick="sendAction('clear')">🗑️ Apagar Nota do Ecrã</button>
+
+  <div class="btn-row-sec">
+    <button class="btn btn-hist" onclick="toggleHistoryBox()">📋 Histórico & Confirmações</button>
+    <button class="btn btn-clear" onclick="sendAction('clear')">🗑️ Apagar Nota Ativa</button>
+  </div>
+
+  <div id="histBox" class="hist-panel">
+    <div class="hist-header">
+      <span class="hist-title">📋 Mensagens & Horas de Leitura</span>
+      <button class="btn-mini" onclick="pollAckHistory(true)">🔄 Atualizar</button>
+    </div>
+    <div id="histList" class="hist-list">
+      <div style="color:#81a1c1;font-size:12px;text-align:center;padding:12px;">A carregar histórico de confirmações...</div>
+    </div>
+  </div>
+
   <button class="btn btn-pin-toggle" onclick="togglePinBox()">🔐 Escolher / Alterar o Meu PIN de Gerente</button>
 
   <div id="pinBox" class="pin-panel">
@@ -104,13 +143,107 @@
   </div>
 
   <div id="status" class="status"></div>
-  <div class="footer">Zero Portas Abertas no Restaurante • PIN Exclusivo do Gerente</div>
+  <div class="footer">
+    <img src="./bd-logo.png" alt="BD" class="bd-footer-logo">
+    <span>Between Dimensions • Zero Portas Abertas</span>
+  </div>
 </div>
 
 <script>
 let deferredPrompt = null;
 let channel = '';
 let posName = 'POS Restaurante';
+let messageHistory = [];
+
+function loadLocalHistory() {
+  if (!channel) return;
+  try {
+    const raw = localStorage.getItem('pos_hist_' + channel);
+    if (raw) messageHistory = JSON.parse(raw);
+  } catch (e) {}
+  renderHistory();
+}
+
+function saveLocalHistory(list) {
+  if (!channel || !Array.isArray(list)) return;
+  messageHistory = list;
+  try {
+    localStorage.setItem('pos_hist_' + channel, JSON.stringify(messageHistory));
+  } catch (e) {}
+  renderHistory();
+}
+
+function renderHistory() {
+  const box = document.getElementById('histList');
+  if (!messageHistory || messageHistory.length === 0) {
+    box.innerHTML = '<div style="color:#81a1c1;font-size:12px;text-align:center;padding:12px;">Ainda não existem mensagens registadas neste POS.</div>';
+    return;
+  }
+  box.innerHTML = messageHistory.map(item => {
+    const prio = item.priority || 'attention';
+    const isOk = item.confirmed || (item.ack_status && item.ack_status.toLowerCase().includes('confirmado'));
+    const badgeCls = isOk ? 'ok' : 'wait';
+    const icon = isOk ? '✔ ' : '⏳ ';
+    const escText = (item.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escAck = (item.ack_status || 'Aguarda confirmação...').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escSent = (item.sent_at || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escAuth = (item.author || 'Gerente').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `
+      <div class="hist-item ${prio}">
+        <div class="hist-meta">
+          <span>📤 Enviada: ${escSent}</span>
+          <span>${escAuth}</span>
+        </div>
+        <div class="hist-text">${escText}</div>
+        <div class="hist-ack ${badgeCls}">👁️ ${icon}${escAck}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function processAckPayload(msg) {
+  const ackEl = document.getElementById('ackText');
+  const st = document.getElementById('status');
+  if (Array.isArray(msg.history)) {
+    saveLocalHistory(msg.history);
+  }
+  if (msg.error) {
+    ackEl.style.color = '#ff8b8b';
+    ackEl.textContent = '❌ ' + msg.error;
+    st.className = 'status err';
+    st.textContent = '❌ ' + msg.error;
+  } else if (msg.ack) {
+    ackEl.style.color = '#a3be8c';
+    ackEl.textContent = '✔ ' + (msg.status ? msg.status + ' — ' : '') + msg.ack;
+  }
+}
+
+async function pollAckHistory(requestFromPos = false) {
+  if (!channel) return;
+  if (requestFromPos) {
+    const pin = document.getElementById('pin').value.trim();
+    if (pin) {
+      sendAction('sync_history', true);
+    }
+  }
+  try {
+    const r = await fetch('https://ntfy.sh/' + encodeURIComponent(channel + '_ack') + '/json?poll=1&since=48h');
+    if (r.ok) {
+      const text = await r.text();
+      const lines = text.trim().split('\n');
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const ev = JSON.parse(line);
+          if (ev.event === 'message' && ev.message) {
+            const msg = JSON.parse(ev.message);
+            processAckPayload(msg);
+          }
+        } catch (e) {}
+      }
+    }
+  } catch (e) {}
+}
 
 function initPairing() {
   const hash = decodeURIComponent(location.hash.replace(/^#/, '')).trim();
@@ -131,10 +264,12 @@ function initPairing() {
 
   const titleEl = document.getElementById('posTitle');
   if (channel) {
-    titleEl.textContent = 'Terminal emparelhado: ' + posName + ' (Funciona em 4G/5G ou Wi-Fi)';
+    titleEl.textContent = 'Terminal: ' + posName + ' (4G/5G/Wi-Fi)';
+    loadLocalHistory();
+    pollAckHistory(false);
     startAckStream();
   } else {
-    titleEl.innerHTML = '⚠️ <b>Terminal não emparelhado.</b> Leia o QR Code na janela "Notas à Equipa" do POS.';
+    titleEl.innerHTML = '⚠️ <b>Leia o QR Code no POS para emparelhar.</b>';
   }
 }
 
@@ -147,18 +282,11 @@ function startAckStream() {
         const d = JSON.parse(ev.data);
         if (d.message) {
           const msg = JSON.parse(d.message);
-          const ackEl = document.getElementById('ackText');
-          const st = document.getElementById('status');
-          if (msg.error) {
-            ackEl.style.color = '#ff8b8b';
-            ackEl.textContent = '❌ ' + msg.error;
-            st.className = 'status err';
-            st.textContent = '❌ ' + msg.error;
-          } else if (msg.ack) {
-            ackEl.style.color = '#a3be8c';
-            ackEl.textContent = '✔ ' + msg.status + ' — ' + msg.ack;
+          processAckPayload(msg);
+          if (msg.ack && !msg.error) {
+            const st = document.getElementById('status');
             st.className = 'status ok';
-            st.textContent = '✅ Confirmado pelo POS: ' + msg.ack;
+            st.textContent = '✅ ' + msg.ack;
           }
         }
       } catch (e) {}
@@ -210,28 +338,42 @@ function togglePinBox() {
   box.style.display = (box.style.display === 'block') ? 'none' : 'block';
 }
 
+function toggleHistoryBox() {
+  const box = document.getElementById('histBox');
+  const opening = box.style.display !== 'block';
+  box.style.display = opening ? 'block' : 'none';
+  if (opening) {
+    renderHistory();
+    pollAckHistory(true);
+  }
+}
+
 async function sha256Hex(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function sendAction(action) {
+async function sendAction(action, silent = false) {
   const st = document.getElementById('status');
   const pin = document.getElementById('pin').value.trim();
-  const text = (action === 'clear') ? '' : document.getElementById('note').value.trim();
+  const text = (action === 'clear' || action === 'sync_history') ? '' : document.getElementById('note').value.trim();
   const priority = document.getElementById('priority').value;
   const font_size = parseInt(document.getElementById('font_size').value, 10);
   const popup = document.getElementById('popup').checked;
   const newPin = document.getElementById('newPin').value.trim();
 
   if (!channel) {
-    st.className = 'status err';
-    st.textContent = '❌ Leia primeiro o QR Code no POS para emparelhar.';
+    if (!silent) {
+      st.className = 'status err';
+      st.textContent = '❌ Leia primeiro o QR Code no POS para emparelhar.';
+    }
     return;
   }
   if (!pin) {
-    st.className = 'status err';
-    st.textContent = '❌ Introduza o seu PIN de Gerente.';
+    if (!silent) {
+      st.className = 'status err';
+      st.textContent = '❌ Introduza o seu PIN de Gerente.';
+    }
     return;
   }
   if (action === 'publish' && !text) {
@@ -245,8 +387,10 @@ async function sendAction(action) {
     return;
   }
 
-  st.className = 'status ok';
-  st.textContent = '⏳ A enviar de forma segura para o POS...';
+  if (!silent) {
+    st.className = 'status ok';
+    st.textContent = '⏳ A comunicar de forma segura com o POS...';
+  }
 
   try {
     const ts = Math.floor(Date.now() / 1000).toString();
@@ -269,7 +413,7 @@ async function sendAction(action) {
       body: JSON.stringify(packet)
     });
 
-    if (r.ok) {
+    if (r.ok && !silent) {
       if (action === 'change_pin') {
         localStorage.setItem('pos_mgr_pin', newPin);
         document.getElementById('pin').value = newPin;
@@ -285,13 +429,15 @@ async function sendAction(action) {
           : '✅ Aviso transmitido! A aguardar confirmação do POS...';
         if (action === 'clear') document.getElementById('note').value = '';
       }
-    } else {
+    } else if (!r.ok && !silent) {
       st.className = 'status err';
       st.textContent = '❌ Erro na ligação (' + r.status + ')';
     }
   } catch (e) {
-    st.className = 'status err';
-    st.textContent = '❌ Sem ligação à Internet: ' + e.message;
+    if (!silent) {
+      st.className = 'status err';
+      st.textContent = '❌ Sem ligação à Internet: ' + e.message;
+    }
   }
 }
 </script>

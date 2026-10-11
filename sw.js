@@ -1,10 +1,11 @@
-const CACHE_NAME = 'pos-gerente-pwa-v2';
+const CACHE_NAME = 'pos-gerente-pwa-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './bd-logo.png'
 ];
 
 self.addEventListener('install', (event) => {
