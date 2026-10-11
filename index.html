@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1e222b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gerência POS">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Gerência POS - Quadro da Equipa</title>
+<style>
+  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { margin: 0; padding: 14px; background: #1e222b; color: #f8f9fa; }
+  .card { max-width: 500px; margin: 0 auto; background: #262b36; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); border: 1px solid #343b4a; }
+  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+  h1 { font-size: 20px; margin: 0; color: #f1c40f; display: flex; align-items: center; gap: 8px; }
+  .badge { background: #1f242d; color: #2ecc71; padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 700; border: 1px solid #2ecc71; white-space: nowrap; }
+  .sub { font-size: 13px; color: #aeb6c4; margin-bottom: 14px; }
+  label { display: block; font-size: 13px; font-weight: 700; color: #d0d7e2; margin-bottom: 6px; margin-top: 12px; }
+  input, textarea { width: 100%; background: #161920; border: 1px solid #3d4659; color: #ffffff; border-radius: 10px; padding: 12px; font-size: 16px; outline: none; }
+  input:focus, textarea:focus { border-color: #3498db; }
+  textarea { min-height: 115px; resize: vertical; line-height: 1.4; }
+  .check-row { display: flex; align-items: center; gap: 10px; background: #1c2029; padding: 12px; border-radius: 10px; margin-top: 14px; border: 1px solid #f1c40f55; }
+  .check-row input { width: 22px; height: 22px; margin: 0; }
+  .check-row span { font-size: 14px; font-weight: 600; color: #f8f9fa; }
+  .btn { width: 100%; border: none; border-radius: 11px; padding: 15px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 14px; transition: opacity 0.15s, transform 0.1s; }
+  .btn:active { opacity: 0.85; transform: scale(0.99); }
+  .btn-install { background: linear-gradient(135deg, #2980b9, #3498db); color: #fff; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(52,152,219,0.35); }
+  .btn-send { background: #2ecc71; color: #111; }
+  .btn-clear { background: #e74c3c; color: #fff; margin-top: 10px; padding: 12px; font-size: 14px; }
+  .btn-pin-toggle { background: #343b4a; color: #f1c40f; margin-top: 12px; padding: 11px; font-size: 13px; font-weight: 700; }
+  .pin-panel { display: none; margin-top: 12px; padding: 14px; border-radius: 12px; background: #1b1f28; border: 1px solid #f1c40f66; }
+  .status { margin-top: 14px; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700; display: none; text-align: center; }
+  .ok { background: #1e4620; color: #7be882; border: 1px solid #2ecc71; display: block; }
+  .err { background: #4a1c1c; color: #ff8b8b; border: 1px solid #e74c3c; display: block; }
+  .guide-modal { display: none; margin-bottom: 12px; padding: 13px; border-radius: 12px; background: #161920; border: 1px solid #3498db; font-size: 13px; line-height: 1.5; color: #d0d7e2; }
+  .footer { text-align: center; font-size: 11px; color: #7f8c8d; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <button id="installBtn" class="btn btn-install" onclick="installPWA()">
+    📲 INSTALAR APP NO TELEMÓVEL
+  </button>
+  <div id="installGuide" class="guide-modal"></div>
+
+  <div class="top-row">
+    <h1>📌 Avisos à Equipa</h1>
+    <span class="badge">🔒 P2P HMAC-SHA256</span>
+  </div>
+  <div class="sub" id="posTitle">A ligar ao terminal POS...</div>
+
+  <label>🔑 O Meu PIN de Gerente</label>
+  <input type="password" id="pin" inputmode="numeric" placeholder="Introduza o seu PIN de Gerente..." autocomplete="current-password">
+
+  <label>📝 Mensagem para os Funcionários (máx. 5 linhas)</label>
+  <textarea id="note" placeholder="Ex: Hoje sugerir Sobremesa do Dia&#10;Reservar Mesa 8 às 20h30 para 6 pax&#10;Falta gás na arca 2"></textarea>
+
+  <label class="check-row">
+    <input type="checkbox" id="popup" checked>
+    <span>🔔 Destacar em Letras Grandes no ecrã do POS</span>
+  </label>
+
+  <button class="btn btn-send" id="sendBtn" onclick="sendAction('publish')">🚀 ENVIAR AVISO PARA O POS</button>
+  <button class="btn btn-clear" onclick="sendAction('clear')">🗑️ Limpar Quadro de Notas</button>
+  <button class="btn btn-pin-toggle" onclick="togglePinBox()">🔐 Escolher / Alterar o Meu PIN de Gerente</button>
+
+  <div id="pinBox" class="pin-panel">
+    <div style="font-size:13px;color:#f1c40f;font-weight:700;margin-bottom:6px;">Definir Novo PIN do Gerente</div>
+    <div style="font-size:12px;color:#aeb6c4;margin-bottom:8px;">Preencha acima o seu PIN atual e escolha abaixo o seu novo PIN pessoal:</div>
+    <input type="password" id="newPin" inputmode="numeric" placeholder="Novo PIN do Gerente (mín. 4 dígitos)">
+    <button class="btn" style="background:#f1c40f;color:#111;margin-top:10px;padding:12px;font-size:14px;" onclick="sendAction('change_pin')">💾 Guardar Novo PIN no POS</button>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div class="footer">Sem portas abertas no restaurante • PIN exclusivo do Gerente</div>
+</div>
+
+<script>
+let deferredPrompt = null;
+let channel = '';
+let posName = 'POS Restaurante';
+
+function initPairing() {
+  const hash = decodeURIComponent(location.hash.replace(/^#/, '')).trim();
+  if (hash) {
+    const parts = hash.split('|');
+    if (parts[0]) {
+      channel = parts[0];
+      posName = parts[1] || 'POS Restaurante';
+      localStorage.setItem('pos_channel', channel);
+      localStorage.setItem('pos_name', posName);
+    }
+  } else {
+    channel = localStorage.getItem('pos_channel') || '';
+    posName = localStorage.getItem('pos_name') || 'POS Restaurante';
+  }
+  const savedPin = localStorage.getItem('pos_mgr_pin') || '';
+  if (savedPin) document.getElementById('pin').value = savedPin;
+
+  const titleEl = document.getElementById('posTitle');
+  if (channel) {
+    titleEl.textContent = 'Ligado ao terminal: ' + posName + ' (em qualquer rede / 4G / 5G)';
+  } else {
+    titleEl.innerHTML = '⚠️ <b>Terminal ainda não emparelhado.</b> Leia o QR Code na janela "Notas à Equipa" do POS.';
+  }
+}
+initPairing();
+
+// Check if already running standalone as installed app
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+if (isStandalone) {
+  document.getElementById('installBtn').style.display = 'none';
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'flex';
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBtn').style.display = 'none';
+  document.getElementById('installGuide').style.display = 'none';
+});
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+async function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    return;
+  }
+  const guide = document.getElementById('installGuide');
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/i.test(ua)) {
+    guide.innerHTML = '🍏 <b>No iPhone / iPad (Safari):</b><br>1. Toque no botão <b>Partilhar</b> (quadrado com seta para cima ⬆️ na barra do Safari).<br>2. Escolha <b>"Adicionar ao Ecrã Principal"</b>.<br>A App ficará instalada com o seu terminal já memorizado!';
+  } else {
+    guide.innerHTML = '📲 <b>Para instalar no Android / Chrome:</b><br>1. Toque no menu <b>⋮ (3 pontos)</b> no canto superior direito do navegador.<br>2. Toque em <b>"Instalar aplicação"</b> ou <b>"Adicionar ao ecrã principal"</b>.';
+  }
+  guide.style.display = (guide.style.display === 'block') ? 'none' : 'block';
+}
+
+function togglePinBox() {
+  const box = document.getElementById('pinBox');
+  box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+}
+
+async function hmacSha256Hex(keyStr, message) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw', enc.encode(keyStr), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function sendAction(action) {
+  const st = document.getElementById('status');
+  const pin = document.getElementById('pin').value.trim();
+  const note = document.getElementById('note').value;
+  const popup = document.getElementById('popup').checked;
+  const newPin = document.getElementById('newPin').value.trim();
+
+  if (!channel) {
+    st.className = 'status err';
+    st.textContent = '❌ Leia primeiro o QR Code no POS para emparelhar o canal.';
+    return;
+  }
+  if (!pin) {
+    st.className = 'status err';
+    st.textContent = '❌ Introduza o seu PIN de Gerente.';
+    return;
+  }
+  if (action === 'change_pin' && newPin.length < 4) {
+    st.className = 'status err';
+    st.textContent = '❌ O novo PIN deve ter pelo menos 4 caracteres.';
+    return;
+  }
+
+  st.className = 'status ok';
+  st.textContent = '⏳ A assinar e enviar pacote encriptado para o POS...';
+
+  try {
+    const ts = Math.floor(Date.now() / 1000);
+    const bodyObj = { ts, action, note, popup };
+    if (action === 'change_pin') {
+      bodyObj.new_pin = newPin;
+    }
+    const rawBody = JSON.stringify(bodyObj);
+    const sig = await hmacSha256Hex(pin, rawBody);
+    const envelope = JSON.stringify({ payload: rawBody, sig });
+
+    const r = await fetch('https://ntfy.sh/' + encodeURIComponent(channel), {
+      method: 'POST',
+      headers: { 'Title': 'POS-Note-Update' },
+      body: envelope
+    });
+
+    if (r.ok) {
+      if (action === 'change_pin') {
+        localStorage.setItem('pos_mgr_pin', newPin);
+        document.getElementById('pin').value = newPin;
+        document.getElementById('newPin').value = '';
+        document.getElementById('pinBox').style.display = 'none';
+        st.className = 'status ok';
+        st.textContent = '✅ Novo PIN de Gerente enviado e atualizado no POS!';
+      } else {
+        localStorage.setItem('pos_mgr_pin', pin);
+        st.className = 'status ok';
+        st.textContent = action === 'clear'
+          ? '✅ Ordem de limpeza enviada ao POS!'
+          : '✅ Aviso transmitido! Vai aparecer no ecrã do POS em ~1 segundo.';
+        if (action === 'clear') document.getElementById('note').value = '';
+      }
+    } else {
+      st.className = 'status err';
+      st.textContent = '❌ Erro ao contactar relay (' + r.status + ')';
+    }
+  } catch (e) {
+    st.className = 'status err';
+    st.textContent = '❌ Sem ligação à Internet: ' + e.message;
+  }
+}
+</script>
+</body>
+</html>
