@@ -1,7 +1,8 @@
-const CACHE_NAME = 'pos-gerente-pwa-v3';
+const CACHE_NAME = 'pos-gerente-pwa-v4';
 const ASSETS = [
   './',
   './index.html',
+  './admin.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

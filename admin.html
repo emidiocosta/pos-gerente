@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1e222b">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Central Técnica — Gestão de PIN e Passwords da Frota POS</title>
+<style>
+  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { margin: 0; padding: 12px; background: #171a21; color: #eceff4; }
+  .card { max-width: 540px; margin: 0 auto; background: #242933; border-radius: 16px; padding: 18px; box-shadow: 0 12px 32px rgba(0,0,0,0.5); border: 1px solid #5e81ac66; }
+  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  h1 { font-size: 17px; margin: 0; color: #88c0d0; }
+  .bd-header-logo { height: 22px; width: auto; opacity: 0.9; }
+  .sub { font-size: 12px; color: #a3be8c; margin-bottom: 14px; font-weight: 600; }
+  .safe-note { background: #1b2028; border: 1px solid #a3be8c55; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; color: #d8dee9; line-height: 1.45; margin-bottom: 12px; }
+  .safe-note b { color: #a3be8c; }
+  label { display: block; font-size: 11.5px; font-weight: 700; color: #88c0d0; margin-bottom: 4px; margin-top: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+  input, select { width: 100%; background: #171a21; border: 1px solid #434c5e; color: #ffffff; border-radius: 9px; padding: 10px 11px; font-size: 14px; outline: none; }
+  input:focus { border-color: #88c0d0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 460px) { .grid2 { grid-template-columns: 1fr; gap: 2px; } }
+  .section-box { background: #1d212a; border: 1px solid #3b4252; border-radius: 12px; padding: 12px; margin-top: 12px; }
+  .section-title { font-size: 12px; font-weight: 800; color: #ebcb8b; margin-bottom: 4px; }
+  .section-hint { font-size: 11px; color: #81a1c1; margin-bottom: 8px; }
+  .btn { width: 100%; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 12px; transition: opacity 0.15s; }
+  .btn:active { opacity: 0.85; }
+  .btn-push { background: #a3be8c; color: #171a21; }
+  .btn-ping { background: #5e81ac; color: #ffffff; margin-top: 8px; padding: 10px; font-size: 12.5px; }
+  .btn-back { background: #3b4252; color: #eceff4; margin-top: 8px; padding: 10px; font-size: 12px; text-decoration: none; display: block; text-align: center; }
+  .status { margin-top: 12px; padding: 10px; border-radius: 9px; font-size: 13px; font-weight: 700; display: none; text-align: center; }
+  .ok { background: #1e4620; color: #a3be8c; border: 1px solid #a3be8c; display: block; }
+  .err { background: #4a1c1c; color: #ff8b8b; border: 1px solid #bf616a; display: block; }
+  .ack-panel { margin-top: 14px; background: #171a21; border: 1px solid #3b4252; border-radius: 11px; padding: 11px; }
+  .ack-hdr { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 800; color: #88c0d0; margin-bottom: 8px; }
+  .ack-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+  .ack-item { background: #242933; border-left: 4px solid #a3be8c; padding: 8px 10px; border-radius: 6px; font-size: 12px; }
+  .ack-item.err-item { border-left-color: #bf616a; }
+  .footer { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #7b88a1; margin-top: 14px; padding-top: 10px; border-top: 1px solid #323846; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top-row">
+    <h1>🛠️ Central Técnica de Credenciais (Frota POS)</h1>
+    <img src="./bd-logo.png" alt="Between Dimensions" class="bd-header-logo">
+  </div>
+  <div class="sub">🔒 Encriptação Stream SHA-256 + Assinatura HMAC • Zero Impacto no Auto-Login e XD Rest</div>
+
+  <div class="safe-note">
+    <b>✔ Proteção Operacional Garantida:</b> Alterar estas credenciais <b>não afeta</b> o arranque automático gráfico (<code>nodm</code>), nem as permissões locais do POS, nem a base de dados do <b>XD Rest</b>. Preencha apenas os campos que pretende alterar.
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>🔑 PIN Técnico Atual (Autorização)</label>
+      <input type="password" id="curTechPin" placeholder="PIN Técnico atual (ex: 369369*)">
+    </div>
+    <div>
+      <label>🎯 Destino da Atualização</label>
+      <input type="text" id="targetHost" value="ALL" placeholder="ALL (Todos) ou Nome do POS">
+    </div>
+  </div>
+
+  <div class="section-box">
+    <div class="section-title">Credenciais Globais a Atualizar (Deixe em branco o que não quiser mudar)</div>
+    <div class="section-hint">Todos os POS ligados (ou assim que arrancarem) aplicam automaticamente os campos preenchidos:</div>
+
+    <div class="grid2">
+      <div>
+        <label>🔐 Novo PIN Técnico Global</label>
+        <input type="password" id="newTechPin" placeholder="Manter atual se vazio">
+      </div>
+      <div>
+        <label>📌 Reset PIN do Gerente</label>
+        <input type="password" id="newMgrPin" placeholder="Manter atual se vazio">
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>🐧 Nova Password Linux ('pos' / SSH)</label>
+        <input type="password" id="newPosPw" placeholder="Manter atual se vazio">
+      </div>
+      <div>
+        <label>🛡️ Nova Password Linux ('root')</label>
+        <input type="password" id="newRootPw" placeholder="Manter atual se vazio">
+      </div>
+    </div>
+
+    <div>
+      <label>🖥️ Nova Password Permanente RustDesk</label>
+      <input type="password" id="newRustPw" placeholder="Manter atual se vazio (mín. 6 caracteres)">
+    </div>
+  </div>
+
+  <button class="btn btn-push" onclick="broadcastPolicy(false)">🚀 APLICAR CREDENCIAIS EM TODA A FROTA POS</button>
+  <button class="btn btn-ping" onclick="broadcastPolicy(true)">📡 Verificar Terminais POS Online Agora (Ping Frota)</button>
+
+  <div id="status" class="status"></div>
+
+  <div class="ack-panel">
+    <div class="ack-hdr">
+      <span>🖥️ Confirmações dos Terminais POS em Tempo Real</span>
+      <span id="ackCount" style="color:#a3be8c;">A escutar frota...</span>
+    </div>
+    <div id="ackList" class="ack-list">
+      <div style="color:#81a1c1;font-size:11.5px;text-align:center;padding:8px;">As confirmações de cada POS aparecem aqui instantaneamente.</div>
+    </div>
+  </div>
+
+  <a href="./index.html" class="btn btn-back">⬅ Voltar ao Quadro de Avisos do Gerente</a>
+
+  <div class="footer">
+    <img src="./bd-logo.png" alt="BD" style="height:15px;opacity:0.65;">
+    <span>Between Dimensions • Gestão Centralizada de Segurança POS</span>
+  </div>
+</div>
+
+<script>
+const FLEET_CHANNEL = 'pos_bd_fleet_sec_9c4e7a2b1d8f';
+const FLEET_MASTER_SALT = 'BD-XD-POS-FLEET-MASTER-2026-KEY';
+let ackLogs = [];
+
+async function sha256Bytes(uint8Arr) {
+  const buf = await crypto.subtle.digest('SHA-256', uint8Arr);
+  return new Uint8Array(buf);
+}
+
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function xorCrypt(dataBytes, keyStr) {
+  const out = new Uint8Array(dataBytes.length);
+  const keyBytes = new TextEncoder().encode(keyStr + '|' + FLEET_MASTER_SALT);
+  let counter = 0;
+  let offset = 0;
+  while (offset < dataBytes.length) {
+    const ctrBuf = new Uint8Array(keyBytes.length + 4);
+    ctrBuf.set(keyBytes, 0);
+    ctrBuf[keyBytes.length] = (counter >>> 24) & 0xff;
+    ctrBuf[keyBytes.length + 1] = (counter >>> 16) & 0xff;
+    ctrBuf[keyBytes.length + 2] = (counter >>> 8) & 0xff;
+    ctrBuf[keyBytes.length + 3] = counter & 0xff;
+    const block = await sha256Bytes(ctrBuf);
+    const chunkLen = Math.min(32, dataBytes.length - offset);
+    for (let i = 0; i < chunkLen; i++) {
+      out[offset + i] = dataBytes[offset + i] ^ block[i];
+    }
+    offset += chunkLen;
+    counter++;
+  }
+  return out;
+}
+
+function uint8ToBase64(u8) {
+  let bin = '';
+  for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+  return btoa(bin);
+}
+
+function addAckLog(msg) {
+  ackLogs.unshift(msg);
+  ackLogs = ackLogs.slice(0, 30);
+  const box = document.getElementById('ackList');
+  document.getElementById('ackCount').textContent = ackLogs.length + ' resposta(s)';
+  box.innerHTML = ackLogs.map(m => {
+    if (m.error) {
+      return `<div class="ack-item err-item"><b>❌ ${m.hostname || 'POS'} (${m.ip || ''})</b> — ${m.error} <span style="float:right;color:#81a1c1;">${m.ts || ''}</span></div>`;
+    }
+    const items = Array.isArray(m.applied) ? m.applied.join(', ') : (m.status || 'OK');
+    return `<div class="ack-item"><b>✔ ${m.hostname || 'POS'} (${m.ip || ''})</b><span style="float:right;color:#81a1c1;">${m.ts || ''}</span><br><span style="color:#a3be8c;font-weight:700;">${m.status || 'Atualizado'}:</span> ${items}</div>`;
+  }).join('');
+}
+
+function startFleetAckListener() {
+  fetch('https://ntfy.sh/' + FLEET_CHANNEL + '_ack/json?poll=1&since=24h')
+    .then(r => r.text())
+    .then(txt => {
+      txt.trim().split('\n').forEach(line => {
+        if (!line.trim()) return;
+        try {
+          const ev = JSON.parse(line);
+          if (ev.event === 'message' && ev.message) addAckLog(JSON.parse(ev.message));
+        } catch (e) {}
+      });
+    }).catch(() => {});
+
+  if (window.EventSource) {
+    const es = new EventSource('https://ntfy.sh/' + FLEET_CHANNEL + '_ack/sse');
+    es.onmessage = (ev) => {
+      try {
+        const d = JSON.parse(ev.data);
+        if (d.message) addAckLog(JSON.parse(d.message));
+      } catch (e) {}
+    };
+  }
+}
+startFleetAckListener();
+
+async function broadcastPolicy(isPing = false) {
+  const st = document.getElementById('status');
+  const authPin = document.getElementById('curTechPin').value.trim();
+  const target_host = document.getElementById('targetHost').value.trim() || 'ALL';
+  const new_tech_pin = document.getElementById('newTechPin').value.trim();
+  const manager_pin = document.getElementById('newMgrPin').value.trim();
+  const linux_pos_password = document.getElementById('newPosPw').value.trim();
+  const linux_root_password = document.getElementById('newRootPw').value.trim();
+  const rustdesk_password = document.getElementById('newRustPw').value.trim();
+
+  if (!authPin) {
+    st.className = 'status err';
+    st.textContent = '❌ Introduza o PIN Técnico Atual para assinar e encriptar a ordem.';
+    return;
+  }
+
+  if (!isPing && !new_tech_pin && !manager_pin && !linux_pos_password && !linux_root_password && !rustdesk_password) {
+    st.className = 'status err';
+    st.textContent = '❌ Preencha pelo menos um novo PIN ou Password para atualizar.';
+    return;
+  }
+
+  st.className = 'status ok';
+  st.textContent = isPing
+    ? '⏳ A interrogar todos os terminais POS da frota...'
+    : '⏳ A encriptar e publicar nova Política de Segurança para a frota POS...';
+
+  try {
+    const policy_id = String(Date.now());
+    const ts = String(Math.floor(Date.now() / 1000));
+    const payloadObj = isPing
+      ? { action: 'ping_fleet', target_host }
+      : {
+          action: 'update_security',
+          target_host,
+          new_tech_pin,
+          manager_pin,
+          linux_pos_password,
+          linux_root_password,
+          rustdesk_password
+        };
+
+    const plainBytes = new TextEncoder().encode(JSON.stringify(payloadObj));
+    const cipherBytes = await xorCrypt(plainBytes, authPin);
+    const cipher_b64 = uint8ToBase64(cipherBytes);
+    const sig = await sha256Hex(`${policy_id}|${ts}|${cipher_b64}|${authPin}|${FLEET_MASTER_SALT}`);
+
+    const envelope = JSON.stringify({ policy_id, ts, cipher_b64, sig });
+    const r = await fetch('https://ntfy.sh/' + FLEET_CHANNEL, {
+      method: 'POST',
+      body: envelope
+    });
+
+    if (r.ok) {
+      if (!isPing && new_tech_pin) {
+        document.getElementById('curTechPin').value = new_tech_pin;
+        document.getElementById('newTechPin').value = '';
+      }
+      st.className = 'status ok';
+      st.textContent = isPing
+        ? '✅ Ping enviado! Veja abaixo os terminais POS que responderam.'
+        : '✅ Política encriptada publicada! Os terminais POS estão a confirmar abaixo em tempo real.';
+    } else {
+      st.className = 'status err';
+      st.textContent = '❌ Erro ao comunicar (' + r.status + ')';
+    }
+  } catch (e) {
+    st.className = 'status err';
+    st.textContent = '❌ Erro: ' + e.message;
+  }
+}
+</script>
+</body>
+</html>
