@@ -13,31 +13,35 @@
 <title>Gerência POS - Quadro da Equipa</title>
 <style>
   * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  body { margin: 0; padding: 14px; background: #1e222b; color: #f8f9fa; }
-  .card { max-width: 500px; margin: 0 auto; background: #262b36; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); border: 1px solid #343b4a; }
-  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
-  h1 { font-size: 20px; margin: 0; color: #f1c40f; display: flex; align-items: center; gap: 8px; }
-  .badge { background: #1f242d; color: #2ecc71; padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 700; border: 1px solid #2ecc71; white-space: nowrap; }
-  .sub { font-size: 13px; color: #aeb6c4; margin-bottom: 14px; }
-  label { display: block; font-size: 13px; font-weight: 700; color: #d0d7e2; margin-bottom: 6px; margin-top: 12px; }
-  input, textarea { width: 100%; background: #161920; border: 1px solid #3d4659; color: #ffffff; border-radius: 10px; padding: 12px; font-size: 16px; outline: none; }
-  input:focus, textarea:focus { border-color: #3498db; }
-  textarea { min-height: 115px; resize: vertical; line-height: 1.4; }
-  .check-row { display: flex; align-items: center; gap: 10px; background: #1c2029; padding: 12px; border-radius: 10px; margin-top: 14px; border: 1px solid #f1c40f55; }
-  .check-row input { width: 22px; height: 22px; margin: 0; }
-  .check-row span { font-size: 14px; font-weight: 600; color: #f8f9fa; }
-  .btn { width: 100%; border: none; border-radius: 11px; padding: 15px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 14px; transition: opacity 0.15s, transform 0.1s; }
+  body { margin: 0; padding: 14px; background: #1e222b; color: #eceff4; }
+  .card { max-width: 500px; margin: 0 auto; background: #262b36; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); border: 1px solid #3b4252; }
+  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  h1 { font-size: 19px; margin: 0; color: #ebcb8b; }
+  .badge { background: #1f242d; color: #a3be8c; padding: 4px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; border: 1px solid #a3be8c; white-space: nowrap; }
+  .sub { font-size: 12px; color: #88c0d0; margin-bottom: 12px; }
+  label { display: block; font-size: 12px; font-weight: 700; color: #d8dee9; margin-bottom: 5px; margin-top: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  input, textarea, select { width: 100%; background: #191d24; border: 1px solid #434c5e; color: #ffffff; border-radius: 10px; padding: 11px; font-size: 15px; outline: none; }
+  input:focus, textarea:focus, select:focus { border-color: #88c0d0; }
+  textarea { min-height: 95px; resize: vertical; line-height: 1.4; font-weight: 600; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .check-row { display: flex; align-items: center; gap: 10px; background: #1e222b; padding: 11px; border-radius: 10px; margin-top: 12px; border: 1px solid #ebcb8b55; }
+  .check-row input { width: 20px; height: 20px; margin: 0; }
+  .check-row span { font-size: 13px; font-weight: 600; color: #eceff4; }
+  .btn { width: 100%; border: none; border-radius: 11px; padding: 14px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 12px; transition: opacity 0.15s, transform 0.1s; }
   .btn:active { opacity: 0.85; transform: scale(0.99); }
   .btn-install { background: linear-gradient(135deg, #2980b9, #3498db); color: #fff; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(52,152,219,0.35); }
-  .btn-send { background: #2ecc71; color: #111; }
-  .btn-clear { background: #e74c3c; color: #fff; margin-top: 10px; padding: 12px; font-size: 14px; }
-  .btn-pin-toggle { background: #343b4a; color: #f1c40f; margin-top: 12px; padding: 11px; font-size: 13px; font-weight: 700; }
-  .pin-panel { display: none; margin-top: 12px; padding: 14px; border-radius: 12px; background: #1b1f28; border: 1px solid #f1c40f66; }
-  .status { margin-top: 14px; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700; display: none; text-align: center; }
-  .ok { background: #1e4620; color: #7be882; border: 1px solid #2ecc71; display: block; }
-  .err { background: #4a1c1c; color: #ff8b8b; border: 1px solid #e74c3c; display: block; }
-  .guide-modal { display: none; margin-bottom: 12px; padding: 13px; border-radius: 12px; background: #161920; border: 1px solid #3498db; font-size: 13px; line-height: 1.5; color: #d0d7e2; }
-  .footer { text-align: center; font-size: 11px; color: #7f8c8d; margin-top: 16px; }
+  .btn-send { background: #a3be8c; color: #1e222b; }
+  .btn-clear { background: #bf616a; color: #fff; margin-top: 8px; padding: 11px; font-size: 13px; }
+  .btn-pin-toggle { background: #3b4252; color: #ebcb8b; margin-top: 10px; padding: 10px; font-size: 12px; font-weight: 700; }
+  .pin-panel { display: none; margin-top: 10px; padding: 12px; border-radius: 12px; background: #1b1f28; border: 1px solid #ebcb8b66; }
+  .ack-box { background: #1e222b; border: 1px solid #434c5e; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 12px; }
+  .ack-title { color: #88c0d0; font-weight: 700; margin-bottom: 3px; }
+  .ack-val { color: #a3be8c; font-weight: 700; }
+  .status { margin-top: 12px; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; display: none; text-align: center; }
+  .ok { background: #1e4620; color: #a3be8c; border: 1px solid #a3be8c; display: block; }
+  .err { background: #4a1c1c; color: #ff8b8b; border: 1px solid #bf616a; display: block; }
+  .guide-modal { display: none; margin-bottom: 12px; padding: 13px; border-radius: 12px; background: #161920; border: 1px solid #88c0d0; font-size: 13px; line-height: 1.5; color: #d8dee9; }
+  .footer { text-align: center; font-size: 11px; color: #81a1c1; margin-top: 14px; }
 </style>
 </head>
 <body>
@@ -49,34 +53,58 @@
 
   <div class="top-row">
     <h1>📌 Avisos à Equipa</h1>
-    <span class="badge">🔒 P2P HMAC-SHA256</span>
+    <span class="badge">🔒 P2P Encriptado</span>
   </div>
   <div class="sub" id="posTitle">A ligar ao terminal POS...</div>
 
-  <label>🔑 O Meu PIN de Gerente</label>
-  <input type="password" id="pin" inputmode="numeric" placeholder="Introduza o seu PIN de Gerente..." autocomplete="current-password">
+  <div class="ack-box">
+    <div class="ack-title">📡 Estado em Tempo Real no POS:</div>
+    <div class="ack-val" id="ackText">Pronto para enviar instruções ao POS</div>
+  </div>
 
-  <label>📝 Mensagem para os Funcionários (máx. 5 linhas)</label>
+  <label>🔑 O Meu PIN de Gerente</label>
+  <input type="password" id="pin" inputmode="numeric" placeholder="Introduza o seu PIN de Gerente (ex: 1234)..." autocomplete="current-password">
+
+  <label>📝 Mensagem / Instrução para os Funcionários</label>
   <textarea id="note" placeholder="Ex: Hoje sugerir Sobremesa do Dia&#10;Reservar Mesa 8 às 20h30 para 6 pax&#10;Falta gás na arca 2"></textarea>
+
+  <div class="row2">
+    <div>
+      <label>🎨 Prioridade / Cor</label>
+      <select id="priority">
+        <option value="urgent">🔴 Urgente (Vermelho)</option>
+        <option value="attention" selected>🟡 Atenção (Amarelo)</option>
+        <option value="normal">🟢 Normal (Verde)</option>
+      </select>
+    </div>
+    <div>
+      <label>🔠 Tamanho Letra</label>
+      <select id="font_size">
+        <option value="17" selected>Gigante (17pt)</option>
+        <option value="14">Grande (14pt)</option>
+        <option value="12">Média (12pt)</option>
+      </select>
+    </div>
+  </div>
 
   <label class="check-row">
     <input type="checkbox" id="popup" checked>
-    <span>🔔 Destacar em Letras Grandes no ecrã do POS</span>
+    <span>🔔 Abrir Alerta Grande no Centro do Ecrã (pede confirmação ao funcionário)</span>
   </label>
 
-  <button class="btn btn-send" id="sendBtn" onclick="sendAction('publish')">🚀 ENVIAR AVISO PARA O POS</button>
-  <button class="btn btn-clear" onclick="sendAction('clear')">🗑️ Limpar Quadro de Notas</button>
+  <button class="btn btn-send" onclick="sendAction('publish')">🚀 TRANSMITIR PARA O ECRÃ DO POS</button>
+  <button class="btn btn-clear" onclick="sendAction('clear')">🗑️ Apagar Nota do Ecrã</button>
   <button class="btn btn-pin-toggle" onclick="togglePinBox()">🔐 Escolher / Alterar o Meu PIN de Gerente</button>
 
   <div id="pinBox" class="pin-panel">
-    <div style="font-size:13px;color:#f1c40f;font-weight:700;margin-bottom:6px;">Definir Novo PIN do Gerente</div>
-    <div style="font-size:12px;color:#aeb6c4;margin-bottom:8px;">Preencha acima o seu PIN atual e escolha abaixo o seu novo PIN pessoal:</div>
-    <input type="password" id="newPin" inputmode="numeric" placeholder="Novo PIN do Gerente (mín. 4 dígitos)">
-    <button class="btn" style="background:#f1c40f;color:#111;margin-top:10px;padding:12px;font-size:14px;" onclick="sendAction('change_pin')">💾 Guardar Novo PIN no POS</button>
+    <div style="font-size:13px;color:#ebcb8b;font-weight:700;margin-bottom:4px;">Escolher Novo PIN Pessoal do Gerente</div>
+    <div style="font-size:12px;color:#d8dee9;margin-bottom:8px;">Preencha acima o seu PIN atual (padrão inicial: <b>1234</b>) e escolha abaixo o seu novo PIN exclusivo de Gerente:</div>
+    <input type="password" id="newPin" inputmode="numeric" placeholder="Novo PIN de Gerente (mín. 4 dígitos)">
+    <button class="btn" style="background:#ebcb8b;color:#1e222b;margin-top:10px;padding:11px;font-size:13px;" onclick="sendAction('change_pin')">💾 Guardar Novo PIN no POS</button>
   </div>
 
   <div id="status" class="status"></div>
-  <div class="footer">Sem portas abertas no restaurante • PIN exclusivo do Gerente</div>
+  <div class="footer">Zero Portas Abertas no Restaurante • PIN Exclusivo do Gerente</div>
 </div>
 
 <script>
@@ -103,14 +131,43 @@ function initPairing() {
 
   const titleEl = document.getElementById('posTitle');
   if (channel) {
-    titleEl.textContent = 'Ligado ao terminal: ' + posName + ' (em qualquer rede / 4G / 5G)';
+    titleEl.textContent = 'Terminal emparelhado: ' + posName + ' (Funciona em 4G/5G ou Wi-Fi)';
+    startAckStream();
   } else {
-    titleEl.innerHTML = '⚠️ <b>Terminal ainda não emparelhado.</b> Leia o QR Code na janela "Notas à Equipa" do POS.';
+    titleEl.innerHTML = '⚠️ <b>Terminal não emparelhado.</b> Leia o QR Code na janela "Notas à Equipa" do POS.';
   }
 }
+
+function startAckStream() {
+  if (!channel || !window.EventSource) return;
+  try {
+    const es = new EventSource('https://ntfy.sh/' + encodeURIComponent(channel + '_ack') + '/sse');
+    es.onmessage = (ev) => {
+      try {
+        const d = JSON.parse(ev.data);
+        if (d.message) {
+          const msg = JSON.parse(d.message);
+          const ackEl = document.getElementById('ackText');
+          const st = document.getElementById('status');
+          if (msg.error) {
+            ackEl.style.color = '#ff8b8b';
+            ackEl.textContent = '❌ ' + msg.error;
+            st.className = 'status err';
+            st.textContent = '❌ ' + msg.error;
+          } else if (msg.ack) {
+            ackEl.style.color = '#a3be8c';
+            ackEl.textContent = '✔ ' + msg.status + ' — ' + msg.ack;
+            st.className = 'status ok';
+            st.textContent = '✅ Confirmado pelo POS: ' + msg.ack;
+          }
+        }
+      } catch (e) {}
+    };
+  } catch (e) {}
+}
+
 initPairing();
 
-// Check if already running standalone as installed app
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 if (isStandalone) {
   document.getElementById('installBtn').style.display = 'none';
@@ -141,9 +198,9 @@ async function installPWA() {
   const guide = document.getElementById('installGuide');
   const ua = navigator.userAgent || '';
   if (/iPhone|iPad|iPod/i.test(ua)) {
-    guide.innerHTML = '🍏 <b>No iPhone / iPad (Safari):</b><br>1. Toque no botão <b>Partilhar</b> (quadrado com seta para cima ⬆️ na barra do Safari).<br>2. Escolha <b>"Adicionar ao Ecrã Principal"</b>.<br>A App ficará instalada com o seu terminal já memorizado!';
+    guide.innerHTML = '🍏 <b>Para instalar no iPhone / iPad (Safari):</b><br>1. Toque no botão <b>Partilhar</b> (ícone quadrado com seta ⬆️ na barra do Safari).<br>2. Deslize e toque em <b>"Adicionar ao Ecrã Principal"</b>.<br>A App ficará instalada no ecrã do telemóvel já ligada a este POS!';
   } else {
-    guide.innerHTML = '📲 <b>Para instalar no Android / Chrome:</b><br>1. Toque no menu <b>⋮ (3 pontos)</b> no canto superior direito do navegador.<br>2. Toque em <b>"Instalar aplicação"</b> ou <b>"Adicionar ao ecrã principal"</b>.';
+    guide.innerHTML = '📲 <b>Para instalar a App no Android:</b><br>1. Toque no menu <b>⋮ (3 pontos)</b> no canto superior direito do navegador.<br>2. Escolha <b>"Instalar aplicação"</b> ou <b>"Adicionar ao ecrã principal"</b>.';
   }
   guide.style.display = (guide.style.display === 'block') ? 'none' : 'block';
 }
@@ -153,25 +210,23 @@ function togglePinBox() {
   box.style.display = (box.style.display === 'block') ? 'none' : 'block';
 }
 
-async function hmacSha256Hex(keyStr, message) {
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw', enc.encode(keyStr), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
-  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 async function sendAction(action) {
   const st = document.getElementById('status');
   const pin = document.getElementById('pin').value.trim();
-  const note = document.getElementById('note').value;
+  const text = (action === 'clear') ? '' : document.getElementById('note').value.trim();
+  const priority = document.getElementById('priority').value;
+  const font_size = parseInt(document.getElementById('font_size').value, 10);
   const popup = document.getElementById('popup').checked;
   const newPin = document.getElementById('newPin').value.trim();
 
   if (!channel) {
     st.className = 'status err';
-    st.textContent = '❌ Leia primeiro o QR Code no POS para emparelhar o canal.';
+    st.textContent = '❌ Leia primeiro o QR Code no POS para emparelhar.';
     return;
   }
   if (!pin) {
@@ -179,29 +234,39 @@ async function sendAction(action) {
     st.textContent = '❌ Introduza o seu PIN de Gerente.';
     return;
   }
+  if (action === 'publish' && !text) {
+    st.className = 'status err';
+    st.textContent = '❌ Escreva uma mensagem para os funcionários.';
+    return;
+  }
   if (action === 'change_pin' && newPin.length < 4) {
     st.className = 'status err';
-    st.textContent = '❌ O novo PIN deve ter pelo menos 4 caracteres.';
+    st.textContent = '❌ O novo PIN deve ter pelo menos 4 dígitos/caracteres.';
     return;
   }
 
   st.className = 'status ok';
-  st.textContent = '⏳ A assinar e enviar pacote encriptado para o POS...';
+  st.textContent = '⏳ A enviar de forma segura para o POS...';
 
   try {
-    const ts = Math.floor(Date.now() / 1000);
-    const bodyObj = { ts, action, note, popup };
-    if (action === 'change_pin') {
-      bodyObj.new_pin = newPin;
-    }
-    const rawBody = JSON.stringify(bodyObj);
-    const sig = await hmacSha256Hex(pin, rawBody);
-    const envelope = JSON.stringify({ payload: rawBody, sig });
+    const ts = Math.floor(Date.now() / 1000).toString();
+    const payloadText = (action === 'change_pin') ? newPin : text;
+    const sigStr = channel + '|' + action + '|' + payloadText + '|' + ts + '|' + pin;
+    const sig = await sha256Hex(sigStr);
+
+    const packet = {
+      action,
+      text: payloadText,
+      priority,
+      font_size,
+      popup,
+      ts,
+      sig
+    };
 
     const r = await fetch('https://ntfy.sh/' + encodeURIComponent(channel), {
       method: 'POST',
-      headers: { 'Title': 'POS-Note-Update' },
-      body: envelope
+      body: JSON.stringify(packet)
     });
 
     if (r.ok) {
@@ -211,18 +276,18 @@ async function sendAction(action) {
         document.getElementById('newPin').value = '';
         document.getElementById('pinBox').style.display = 'none';
         st.className = 'status ok';
-        st.textContent = '✅ Novo PIN de Gerente enviado e atualizado no POS!';
+        st.textContent = '✅ Pedido de alteração de PIN enviado ao POS!';
       } else {
         localStorage.setItem('pos_mgr_pin', pin);
         st.className = 'status ok';
         st.textContent = action === 'clear'
           ? '✅ Ordem de limpeza enviada ao POS!'
-          : '✅ Aviso transmitido! Vai aparecer no ecrã do POS em ~1 segundo.';
+          : '✅ Aviso transmitido! A aguardar confirmação do POS...';
         if (action === 'clear') document.getElementById('note').value = '';
       }
     } else {
       st.className = 'status err';
-      st.textContent = '❌ Erro ao contactar relay (' + r.status + ')';
+      st.textContent = '❌ Erro na ligação (' + r.status + ')';
     }
   } catch (e) {
     st.className = 'status err';
