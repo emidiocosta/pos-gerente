@@ -3,23 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#1e222b">
-<link rel="manifest" href="./manifest.json">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#171a21">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-<link rel="apple-touch-icon" href="./icon-192.png">
-<title>Central Técnica — Gestão de PIN e Passwords da Frota POS</title>
+<title>Cofre Restrito — Between Dimensions</title>
 <style>
   * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   body { margin: 0; padding: 12px; background: #171a21; color: #eceff4; }
-  .card { max-width: 540px; margin: 0 auto; background: #242933; border-radius: 16px; padding: 18px; box-shadow: 0 12px 32px rgba(0,0,0,0.5); border: 1px solid #5e81ac66; }
+  .card { max-width: 540px; margin: 20px auto; background: #242933; border-radius: 16px; padding: 22px; box-shadow: 0 12px 32px rgba(0,0,0,0.55); border: 1px solid #3b4252; }
   .top-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
   h1 { font-size: 17px; margin: 0; color: #88c0d0; }
   .bd-header-logo { height: 22px; width: auto; opacity: 0.9; }
   .sub { font-size: 12px; color: #a3be8c; margin-bottom: 14px; font-weight: 600; }
   .safe-note { background: #1b2028; border: 1px solid #a3be8c55; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; color: #d8dee9; line-height: 1.45; margin-bottom: 12px; }
   .safe-note b { color: #a3be8c; }
-  label { display: block; font-size: 11.5px; font-weight: 700; color: #88c0d0; margin-bottom: 4px; margin-top: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
-  input, select { width: 100%; background: #171a21; border: 1px solid #434c5e; color: #ffffff; border-radius: 9px; padding: 10px 11px; font-size: 14px; outline: none; }
+  label { display: block; font-size: 11.5px; font-weight: 700; color: #88c0d0; margin-bottom: 5px; margin-top: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+  input, select { width: 100%; background: #171a21; border: 1px solid #434c5e; color: #ffffff; border-radius: 9px; padding: 11px 12px; font-size: 15px; outline: none; }
   input:focus { border-color: #88c0d0; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media (max-width: 460px) { .grid2 { grid-template-columns: 1fr; gap: 2px; } }
@@ -30,7 +29,7 @@
   .btn:active { opacity: 0.85; }
   .btn-push { background: #a3be8c; color: #171a21; }
   .btn-ping { background: #5e81ac; color: #ffffff; margin-top: 8px; padding: 10px; font-size: 12.5px; }
-  .btn-back { background: #3b4252; color: #eceff4; margin-top: 8px; padding: 10px; font-size: 12px; text-decoration: none; display: block; text-align: center; }
+  .btn-back { background: #3b4252; color: #eceff4; margin-top: 12px; padding: 10px; font-size: 12px; }
   .status { margin-top: 12px; padding: 10px; border-radius: 9px; font-size: 13px; font-weight: 700; display: none; text-align: center; }
   .ok { background: #1e4620; color: #a3be8c; border: 1px solid #a3be8c; display: block; }
   .err { background: #4a1c1c; color: #ff8b8b; border: 1px solid #bf616a; display: block; }
@@ -39,105 +38,133 @@
   .ack-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
   .ack-item { background: #242933; border-left: 4px solid #a3be8c; padding: 8px 10px; border-radius: 6px; font-size: 12px; }
   .ack-item.err-item { border-left-color: #bf616a; }
-  .footer { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #7b88a1; margin-top: 14px; padding-top: 10px; border-top: 1px solid #323846; }
+  .footer { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #7b88a1; margin-top: 16px; padding-top: 10px; border-top: 1px solid #323846; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="top-row">
-    <h1>🛠️ Central Técnica de Credenciais (Frota POS)</h1>
-    <img src="./bd-logo.png" alt="Between Dimensions" class="bd-header-logo">
-  </div>
-  <div class="sub">🔒 Encriptação Stream SHA-256 + Assinatura HMAC • Zero Impacto no Auto-Login e XD Rest</div>
-
-  <div class="safe-note">
-    <b>✔ Proteção Operacional Garantida:</b> Alterar estas credenciais <b>não afeta</b> o arranque automático gráfico (<code>nodm</code>), nem as permissões locais do POS, nem a base de dados do <b>XD Rest</b>. Preencha apenas os campos que pretende alterar.
-  </div>
-
-  <div class="grid2">
-    <div>
-      <label>🔑 PIN Técnico Atual (Autorização)</label>
-      <input type="password" id="curTechPin" placeholder="PIN Técnico atual (ex: 369369*)">
+<div class="card" id="appRoot">
+  <div style="text-align:center;padding:12px 4px;">
+    <img src="./bd-logo.png" alt="Between Dimensions" style="height:32px;margin-bottom:14px;opacity:0.9;">
+    <h1 style="justify-content:center;color:#ebcb8b;font-size:18px;margin-bottom:6px;">🔒 Cofre de Administração Técnica</h1>
+    <div style="font-size:12.5px;color:#81a1c1;margin-bottom:18px;line-height:1.45;">
+      Esta página está encriptada com <b>PBKDF2-HMAC-SHA256 (150.000 iterações)</b>.<br>
+      Sem a Chave Mestra Técnica, o painel, os canais e os terminais POS não existem no código-fonte.
     </div>
-    <div>
-      <label>🎯 Destino da Atualização</label>
-      <input type="text" id="targetHost" value="ALL" placeholder="ALL (Todos) ou Nome do POS">
-    </div>
-  </div>
-
-  <div class="section-box">
-    <div class="section-title">Credenciais Globais a Atualizar (Deixe em branco o que não quiser mudar)</div>
-    <div class="section-hint">Todos os POS ligados (ou assim que arrancarem) aplicam automaticamente os campos preenchidos:</div>
-
-    <div class="grid2">
-      <div>
-        <label>🔐 Novo PIN Técnico Global</label>
-        <input type="password" id="newTechPin" placeholder="Manter atual se vazio">
-      </div>
-      <div>
-        <label>📌 Reset PIN do Gerente</label>
-        <input type="password" id="newMgrPin" placeholder="Manter atual se vazio">
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div>
-        <label>🐧 Nova Password Linux ('pos' / SSH)</label>
-        <input type="password" id="newPosPw" placeholder="Manter atual se vazio">
-      </div>
-      <div>
-        <label>🛡️ Nova Password Linux ('root')</label>
-        <input type="password" id="newRootPw" placeholder="Manter atual se vazio">
-      </div>
-    </div>
-
-    <div>
-      <label>🖥️ Nova Password Permanente RustDesk</label>
-      <input type="password" id="newRustPw" placeholder="Manter atual se vazio (mín. 6 caracteres)">
-    </div>
-  </div>
-
-  <button class="btn btn-push" onclick="broadcastPolicy(false)">🚀 APLICAR CREDENCIAIS EM TODA A FROTA POS</button>
-  <button class="btn btn-ping" onclick="broadcastPolicy(true)">📡 Verificar Terminais POS Online Agora (Ping Frota)</button>
-
-  <div id="status" class="status"></div>
-
-  <div class="ack-panel">
-    <div class="ack-hdr">
-      <span>🖥️ Confirmações dos Terminais POS em Tempo Real</span>
-      <span id="ackCount" style="color:#a3be8c;">A escutar frota...</span>
-    </div>
-    <div id="ackList" class="ack-list">
-      <div style="color:#81a1c1;font-size:11.5px;text-align:center;padding:8px;">As confirmações de cada POS aparecem aqui instantaneamente.</div>
-    </div>
-  </div>
-
-  <a href="./index.html" class="btn btn-back">⬅ Voltar ao Quadro de Avisos do Gerente</a>
-
-  <div class="footer">
-    <img src="./bd-logo.png" alt="BD" style="height:15px;opacity:0.65;">
-    <span>Between Dimensions • Gestão Centralizada de Segurança POS</span>
+    <label style="text-align:left;">🔑 Chave Mestra Técnica</label>
+    <input type="password" id="vaultKey" placeholder="Introduza a Chave Mestra..." onkeydown="if(event.key==='Enter')unlockVault()">
+    <button class="btn btn-push" id="unlockBtn" onclick="unlockVault()">🔓 DESBLOQUEAR COFRE CENTRAL</button>
+    <div id="vaultErr" class="status"></div>
   </div>
 </div>
 
 <script>
-const FLEET_CHANNEL = 'pos_bd_fleet_sec_9c4e7a2b1d8f';
-const FLEET_MASTER_SALT = 'BD-XD-POS-FLEET-MASTER-2026-KEY';
+const VAULT_SALT_B64 = "3s+mRZWbg0MW9YaWVmHCZg==";
+const VAULT_ITER = 150000;
+const VAULT_MAC_HEX = "740178e8b36cf138b54fe28f9900560d7658715bcd4aa75b8fc6a8407862d0b7";
+const VAULT_CIPHER_B64 = "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";
+
+let FLEET_CHANNEL = "";
+let FLEET_MASTER_SALT = "";
 let ackLogs = [];
 
+function b64ToUint8(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+function uint8ToBase64(u8) {
+  let bin = "";
+  for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+  return btoa(bin);
+}
+
+function bytesToHex(u8) {
+  return Array.from(u8).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function sha256Bytes(uint8Arr) {
-  const buf = await crypto.subtle.digest('SHA-256', uint8Arr);
+  const buf = await crypto.subtle.digest("SHA-256", uint8Arr);
   return new Uint8Array(buf);
 }
 
 async function sha256Hex(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return bytesToHex(await sha256Bytes(new TextEncoder().encode(str)));
+}
+
+async function unlockVault() {
+  const keyStr = document.getElementById("vaultKey").value.trim();
+  const errEl = document.getElementById("vaultErr");
+  const btn = document.getElementById("unlockBtn");
+  if (!keyStr) {
+    errEl.className = "status err";
+    errEl.textContent = "❌ Introduza a Chave Mestra Técnica.";
+    return;
+  }
+  btn.textContent = "⏳ A desencriptar cofre (PBKDF2 150.000x)...";
+  try {
+    const salt = b64ToUint8(VAULT_SALT_B64);
+    const cipherBytes = b64ToUint8(VAULT_CIPHER_B64);
+    const baseKey = await crypto.subtle.importKey(
+      "raw", new TextEncoder().encode(keyStr), { name: "PBKDF2" }, false, ["deriveBits"]
+    );
+    const bits = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", salt, iterations: VAULT_ITER, hash: "SHA-256" },
+      baseKey, 512
+    );
+    const dk = new Uint8Array(bits);
+    const encKey = dk.slice(0, 32);
+    const macKey = dk.slice(32, 64);
+
+    const hmacCryptoKey = await crypto.subtle.importKey(
+      "raw", macKey, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+    );
+    const sigBuf = await crypto.subtle.sign("HMAC", hmacCryptoKey, cipherBytes);
+    const calcMac = bytesToHex(new Uint8Array(sigBuf));
+
+    if (calcMac !== VAULT_MAC_HEX) {
+      btn.textContent = "🔓 DESBLOQUEAR COFRE CENTRAL";
+      errEl.className = "status err";
+      errEl.textContent = "❌ Acesso Negado: Chave Mestra incorreta!";
+      return;
+    }
+
+    const plainBytes = new Uint8Array(cipherBytes.length);
+    let counter = 0;
+    let offset = 0;
+    while (offset < cipherBytes.length) {
+      const ctrBuf = new Uint8Array(36);
+      ctrBuf.set(encKey, 0);
+      ctrBuf[32] = (counter >>> 24) & 0xff;
+      ctrBuf[33] = (counter >>> 16) & 0xff;
+      ctrBuf[34] = (counter >>> 8) & 0xff;
+      ctrBuf[35] = counter & 0xff;
+      const block = await sha256Bytes(ctrBuf);
+      const chunk = Math.min(32, cipherBytes.length - offset);
+      for (let i = 0; i < chunk; i++) {
+        plainBytes[offset + i] = cipherBytes[offset + i] ^ block[i];
+      }
+      offset += chunk;
+      counter++;
+    }
+
+    const data = JSON.parse(new TextDecoder().decode(plainBytes));
+    FLEET_CHANNEL = data.fleet_channel;
+    FLEET_MASTER_SALT = data.fleet_salt;
+    document.getElementById("appRoot").innerHTML = data.html;
+    document.getElementById("curTechPin").value = keyStr;
+    startFleetAckListener();
+  } catch (e) {
+    btn.textContent = "🔓 DESBLOQUEAR COFRE CENTRAL";
+    errEl.className = "status err";
+    errEl.textContent = "❌ Erro ao desencriptar: " + e.message;
+  }
 }
 
 async function xorCrypt(dataBytes, keyStr) {
   const out = new Uint8Array(dataBytes.length);
-  const keyBytes = new TextEncoder().encode(keyStr + '|' + FLEET_MASTER_SALT);
+  const keyBytes = new TextEncoder().encode(keyStr + "|" + FLEET_MASTER_SALT);
   let counter = 0;
   let offset = 0;
   while (offset < dataBytes.length) {
@@ -158,41 +185,38 @@ async function xorCrypt(dataBytes, keyStr) {
   return out;
 }
 
-function uint8ToBase64(u8) {
-  let bin = '';
-  for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
-  return btoa(bin);
-}
-
 function addAckLog(msg) {
   ackLogs.unshift(msg);
   ackLogs = ackLogs.slice(0, 30);
-  const box = document.getElementById('ackList');
-  document.getElementById('ackCount').textContent = ackLogs.length + ' resposta(s)';
+  const box = document.getElementById("ackList");
+  const cnt = document.getElementById("ackCount");
+  if (!box || !cnt) return;
+  cnt.textContent = ackLogs.length + " resposta(s)";
   box.innerHTML = ackLogs.map(m => {
     if (m.error) {
       return `<div class="ack-item err-item"><b>❌ ${m.hostname || 'POS'} (${m.ip || ''})</b> — ${m.error} <span style="float:right;color:#81a1c1;">${m.ts || ''}</span></div>`;
     }
-    const items = Array.isArray(m.applied) ? m.applied.join(', ') : (m.status || 'OK');
+    const items = Array.isArray(m.applied) ? m.applied.join(", ") : (m.status || "OK");
     return `<div class="ack-item"><b>✔ ${m.hostname || 'POS'} (${m.ip || ''})</b><span style="float:right;color:#81a1c1;">${m.ts || ''}</span><br><span style="color:#a3be8c;font-weight:700;">${m.status || 'Atualizado'}:</span> ${items}</div>`;
-  }).join('');
+  }).join("");
 }
 
 function startFleetAckListener() {
-  fetch('https://ntfy.sh/' + FLEET_CHANNEL + '_ack/json?poll=1&since=24h')
+  if (!FLEET_CHANNEL) return;
+  fetch("https://ntfy.sh/" + FLEET_CHANNEL + "_ack/json?poll=1&since=24h")
     .then(r => r.text())
     .then(txt => {
-      txt.trim().split('\n').forEach(line => {
+      txt.trim().split("\n").forEach(line => {
         if (!line.trim()) return;
         try {
           const ev = JSON.parse(line);
-          if (ev.event === 'message' && ev.message) addAckLog(JSON.parse(ev.message));
+          if (ev.event === "message" && ev.message) addAckLog(JSON.parse(ev.message));
         } catch (e) {}
       });
     }).catch(() => {});
 
   if (window.EventSource) {
-    const es = new EventSource('https://ntfy.sh/' + FLEET_CHANNEL + '_ack/sse');
+    const es = new EventSource("https://ntfy.sh/" + FLEET_CHANNEL + "_ack/sse");
     es.onmessage = (ev) => {
       try {
         const d = JSON.parse(ev.data);
@@ -201,42 +225,41 @@ function startFleetAckListener() {
     };
   }
 }
-startFleetAckListener();
 
 async function broadcastPolicy(isPing = false) {
-  const st = document.getElementById('status');
-  const authPin = document.getElementById('curTechPin').value.trim();
-  const target_host = document.getElementById('targetHost').value.trim() || 'ALL';
-  const new_tech_pin = document.getElementById('newTechPin').value.trim();
-  const manager_pin = document.getElementById('newMgrPin').value.trim();
-  const linux_pos_password = document.getElementById('newPosPw').value.trim();
-  const linux_root_password = document.getElementById('newRootPw').value.trim();
-  const rustdesk_password = document.getElementById('newRustPw').value.trim();
+  const st = document.getElementById("status");
+  const authPin = document.getElementById("curTechPin").value.trim();
+  const target_host = document.getElementById("targetHost").value.trim() || "ALL";
+  const new_tech_pin = document.getElementById("newTechPin").value.trim();
+  const manager_pin = document.getElementById("newMgrPin").value.trim();
+  const linux_pos_password = document.getElementById("newPosPw").value.trim();
+  const linux_root_password = document.getElementById("newRootPw").value.trim();
+  const rustdesk_password = document.getElementById("newRustPw").value.trim();
 
   if (!authPin) {
-    st.className = 'status err';
-    st.textContent = '❌ Introduza o PIN Técnico Atual para assinar e encriptar a ordem.';
+    st.className = "status err";
+    st.textContent = "❌ Introduza o PIN Técnico Atual para assinar e encriptar a ordem.";
     return;
   }
 
   if (!isPing && !new_tech_pin && !manager_pin && !linux_pos_password && !linux_root_password && !rustdesk_password) {
-    st.className = 'status err';
-    st.textContent = '❌ Preencha pelo menos um novo PIN ou Password para atualizar.';
+    st.className = "status err";
+    st.textContent = "❌ Preencha pelo menos um novo PIN ou Password para atualizar.";
     return;
   }
 
-  st.className = 'status ok';
+  st.className = "status ok";
   st.textContent = isPing
-    ? '⏳ A interrogar todos os terminais POS da frota...'
-    : '⏳ A encriptar e publicar nova Política de Segurança para a frota POS...';
+    ? "⏳ A interrogar todos os terminais POS da frota..."
+    : "⏳ A encriptar e publicar nova Política de Segurança para a frota POS...";
 
   try {
     const policy_id = String(Date.now());
     const ts = String(Math.floor(Date.now() / 1000));
     const payloadObj = isPing
-      ? { action: 'ping_fleet', target_host }
+      ? { action: "ping_fleet", target_host }
       : {
-          action: 'update_security',
+          action: "update_security",
           target_host,
           new_tech_pin,
           manager_pin,
@@ -251,27 +274,27 @@ async function broadcastPolicy(isPing = false) {
     const sig = await sha256Hex(`${policy_id}|${ts}|${cipher_b64}|${authPin}|${FLEET_MASTER_SALT}`);
 
     const envelope = JSON.stringify({ policy_id, ts, cipher_b64, sig });
-    const r = await fetch('https://ntfy.sh/' + FLEET_CHANNEL, {
-      method: 'POST',
+    const r = await fetch("https://ntfy.sh/" + FLEET_CHANNEL, {
+      method: "POST",
       body: envelope
     });
 
     if (r.ok) {
       if (!isPing && new_tech_pin) {
-        document.getElementById('curTechPin').value = new_tech_pin;
-        document.getElementById('newTechPin').value = '';
+        document.getElementById("curTechPin").value = new_tech_pin;
+        document.getElementById("newTechPin").value = "";
       }
-      st.className = 'status ok';
+      st.className = "status ok";
       st.textContent = isPing
-        ? '✅ Ping enviado! Veja abaixo os terminais POS que responderam.'
-        : '✅ Política encriptada publicada! Os terminais POS estão a confirmar abaixo em tempo real.';
+        ? "✅ Ping enviado! Veja abaixo os terminais POS que responderam."
+        : "✅ Política encriptada publicada! Os terminais POS estão a confirmar abaixo em tempo real.";
     } else {
-      st.className = 'status err';
-      st.textContent = '❌ Erro ao comunicar (' + r.status + ')';
+      st.className = "status err";
+      st.textContent = "❌ Erro ao comunicar (" + r.status + ")";
     }
   } catch (e) {
-    st.className = 'status err';
-    st.textContent = '❌ Erro: ' + e.message;
+    st.className = "status err";
+    st.textContent = "❌ Erro: " + e.message;
   }
 }
 </script>
