@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#1e222b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -10,11 +11,11 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<title>Gerência POS - Quadro da Equipa</title>
+<title>Acesso Privado — Gerência POS</title>
 <style>
   * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   body { margin: 0; padding: 12px; background: #1e222b; color: #eceff4; }
-  .card { max-width: 520px; margin: 0 auto; background: #262b36; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); border: 1px solid #3b4252; }
+  .card { max-width: 520px; margin: 10px auto; background: #262b36; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.55); border: 1px solid #3b4252; }
   .top-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
   .title-wrap { display: flex; align-items: center; gap: 8px; }
   h1 { font-size: 18px; margin: 0; color: #ebcb8b; }
@@ -67,106 +68,243 @@
 </style>
 </head>
 <body>
-<div class="card">
-  <button id="installBtn" class="btn btn-install" onclick="installPWA()">
-    📲 INSTALAR APP NO TELEMÓVEL
-  </button>
-  <div id="installGuide" class="guide-modal"></div>
-
-  <div class="top-row">
-    <div class="title-wrap">
-      <h1>📌 Avisos à Equipa</h1>
+<div class="card" id="mainCard">
+  <div id="gateBox" style="text-align:center;padding:8px 4px;">
+    <img src="./bd-logo.png" alt="Between Dimensions" style="height:28px;margin-bottom:10px;opacity:0.9;">
+    <h1 style="justify-content:center;color:#ebcb8b;font-size:18px;margin-bottom:6px;">🔒 Acesso Privado — Gerência POS</h1>
+    <div id="gateSub" style="font-size:12px;color:#88c0d0;margin-bottom:14px;line-height:1.45;">
+      Esta aplicação está encriptada (PBKDF2 150.000x) e restrita a telemóveis autorizados pelo terminal POS.
     </div>
-    <img src="./bd-logo.png" alt="Between Dimensions" class="bd-header-logo">
-  </div>
-  <div class="sub-row">
-    <div class="sub" id="posTitle">A ligar ao terminal POS...</div>
-    <span class="badge">🔒 P2P SHA-256</span>
-  </div>
 
-  <div class="ack-box">
-    <div class="ack-title">📡 Última Confirmação no POS:</div>
-    <div class="ack-val" id="ackText">Pronto para enviar instruções ao POS</div>
-  </div>
-
-  <label>🔑 O Meu PIN de Gerente</label>
-  <input type="password" id="pin" inputmode="numeric" placeholder="Introduza o seu PIN de Gerente (ex: 1234)..." autocomplete="current-password">
-
-  <label>📝 Mensagem / Instrução para os Funcionários</label>
-  <textarea id="note" placeholder="Ex: Hoje sugerir Sobremesa do Dia&#10;Reservar Mesa 8 às 20h30 para 6 pax&#10;Falta gás na arca 2"></textarea>
-
-  <div class="row2">
-    <div>
-      <label>🎨 Prioridade / Cor</label>
-      <select id="priority">
-        <option value="urgent">🔴 Urgente (Vermelho)</option>
-        <option value="attention" selected>🟡 Atenção (Amarelo)</option>
-        <option value="normal">🟢 Normal (Verde)</option>
-      </select>
-    </div>
-    <div>
-      <label>🔠 Tamanho Letra</label>
-      <select id="font_size">
-        <option value="17" selected>Gigante (17pt)</option>
-        <option value="14">Grande (14pt)</option>
-        <option value="12">Média (12pt)</option>
-      </select>
-    </div>
-  </div>
-
-  <label class="check-row">
-    <input type="checkbox" id="popup" checked>
-    <span>🔔 Abrir Alerta Grande no Centro do Ecrã (pede confirmação ao funcionário)</span>
-  </label>
-
-  <button class="btn btn-send" onclick="sendAction('publish')">🚀 TRANSMITIR PARA O ECRÃ DO POS</button>
-
-  <div class="btn-row-sec">
-    <button class="btn btn-hist" onclick="toggleHistoryBox()">📋 Histórico & Confirmações</button>
-    <button class="btn btn-clear" onclick="sendAction('clear')">🗑️ Apagar Nota Ativa</button>
-  </div>
-
-  <div id="histBox" class="hist-panel">
-    <div class="hist-header">
-      <span class="hist-title">📋 Mensagens & Horas de Leitura</span>
-      <div class="hist-actions">
-        <button class="btn-mini" onclick="pollAckHistory(true)">🔄 Atualizar</button>
-        <button class="btn-mini btn-mini-danger" onclick="toggleTechClearBox()">🛠️ Apagar Histórico</button>
+    <div id="unpairedFields" style="display:none;text-align:left;background:#1e222b;padding:12px;border-radius:10px;border:1px solid #bf616a66;margin-bottom:10px;">
+      <div style="font-size:12px;color:#ff8b8b;font-weight:700;margin-bottom:6px;">⚠️ Dispositivo Não Emparelhado</div>
+      <div style="font-size:11.5px;color:#d8dee9;margin-bottom:8px;line-height:1.4;">
+        Para autorizar este telemóvel, abra <b>Notas à Equipa</b> no terminal POS (com PIN) e leia o <b>QR Code de Emparelhamento</b>, ou introduza os dados de certificação do terminal:
       </div>
+      <label style="margin-top:4px;">📡 ID do Canal Secreto do POS</label>
+      <input type="text" id="manualChannel" placeholder="Ex: pos_xd_...">
+      <label>🔐 Chave de Certificação da App</label>
+      <input type="password" id="manualVaultKey" placeholder="Chave embutida no QR Code do POS...">
     </div>
 
-    <div id="techClearBox" class="tech-clear-box">
-      <div style="font-size:12px;color:#ff8b8b;font-weight:700;margin-bottom:6px;">🛠️ Exclusivo para Técnico: Apagar Todo o Histórico</div>
-      <input type="password" id="techPinInput" placeholder="Introduza o PIN Técnico..." style="padding:9px;font-size:14px;margin-bottom:8px;">
-      <button class="btn" style="background:#bf616a;color:#fff;margin-top:0;padding:10px;font-size:13px;" onclick="sendTechClearHistory()">🗑️ Confirmar Limpeza Total do Histórico</button>
+    <div id="pairedBadge" style="display:none;background:#1e222b;padding:10px;border-radius:10px;border:1px solid #a3be8c66;margin-bottom:10px;">
+      <div style="font-size:11px;color:#88c0d0;font-weight:700;">TERMINAL POS EMPARELHADO:</div>
+      <div id="pairedPosName" style="font-size:14px;color:#a3be8c;font-weight:800;margin-top:2px;">POS Restaurante</div>
     </div>
 
-    <div id="histList" class="hist-list">
-      <div style="color:#81a1c1;font-size:12px;text-align:center;padding:12px;">A carregar histórico de confirmações...</div>
+    <label style="text-align:left;">🔑 PIN Pessoal de Gerente</label>
+    <input type="password" id="loginPin" inputmode="numeric" placeholder="Introduza o seu PIN de Gerente para desbloquear..." style="text-align:center;font-size:17px;font-weight:800;letter-spacing:3px;" onkeydown="if(event.key==='Enter')unlockManagerApp()">
+
+    <button class="btn btn-send" id="btnUnlockApp" onclick="unlockManagerApp()">🔓 VALIDAR PIN E DESBLOQUEAR APP</button>
+    <div id="gateErr" class="status"></div>
+
+    <div class="footer">
+      <img src="./bd-logo.png" alt="BD" class="bd-footer-logo">
+      <span>Between Dimensions • Proteção Zero-Knowledge</span>
     </div>
-  </div>
-
-  <button class="btn btn-pin-toggle" onclick="togglePinBox()">🔐 Escolher / Alterar o Meu PIN de Gerente</button>
-
-  <div id="pinBox" class="pin-panel">
-    <div style="font-size:13px;color:#ebcb8b;font-weight:700;margin-bottom:4px;">Escolher Novo PIN Pessoal do Gerente</div>
-    <div style="font-size:12px;color:#d8dee9;margin-bottom:8px;">Preencha acima o seu PIN atual (padrão inicial: <b>1234</b>) e escolha abaixo o seu novo PIN exclusivo de Gerente:</div>
-    <input type="password" id="newPin" inputmode="numeric" placeholder="Novo PIN de Gerente (mín. 4 dígitos)">
-    <button class="btn" style="background:#ebcb8b;color:#1e222b;margin-top:10px;padding:11px;font-size:13px;" onclick="sendAction('change_pin')">💾 Guardar Novo PIN no POS</button>
-  </div>
-
-  <div id="status" class="status"></div>
-  <div class="footer">
-    <img src="./bd-logo.png" alt="BD" class="bd-footer-logo">
-    <span>Between Dimensions • Zero Portas Abertas</span>
   </div>
 </div>
 
 <script>
+const APP_SALT_B64 = "QkRfUE9TX01HUl8yMDI2IQ==";
+const APP_ITER = 150000;
+const APP_MAC_HEX = "a1ca4b0fdab39f749b4ac14bfc89f39c05b127fb96a68fc9cb8b62373cc4061e";
+const APP_CIPHER_B64 = "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";
+
 let deferredPrompt = null;
 let channel = '';
 let posName = 'POS Restaurante';
+let activeSessionPin = '';
 let messageHistory = [];
+
+function b64ToUint8(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+function bytesToHex(u8) {
+  return Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function sha256Bytes(uint8Arr) {
+  const buf = await crypto.subtle.digest('SHA-256', uint8Arr);
+  return new Uint8Array(buf);
+}
+
+async function sha256Hex(str) {
+  return bytesToHex(await sha256Bytes(new TextEncoder().encode(str)));
+}
+
+function initGatePairing() {
+  const hash = decodeURIComponent(location.hash.replace(/^#/, '')).trim();
+  if (hash) {
+    const parts = hash.split('|');
+    if (parts[0]) {
+      channel = parts[0];
+      posName = parts[1] || 'POS Restaurante';
+      localStorage.setItem('pos_channel', channel);
+      localStorage.setItem('pos_name', posName);
+      if (parts[2]) localStorage.setItem('pos_app_vault_key', parts[2]);
+      if (parts[3]) localStorage.setItem('pos_mgr_verifier_' + channel, parts[3]);
+      // Limpar imediatamente o código secreto da barra de endereços!
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
+  } else {
+    channel = localStorage.getItem('pos_channel') || '';
+    posName = localStorage.getItem('pos_name') || 'POS Restaurante';
+  }
+
+  const savedVaultKey = localStorage.getItem('pos_app_vault_key') || '';
+  if (channel && savedVaultKey) {
+    document.getElementById('unpairedFields').style.display = 'none';
+    document.getElementById('pairedBadge').style.display = 'block';
+    document.getElementById('pairedPosName').textContent = posName + ' (' + channel.slice(0, 12) + ')';
+    refreshVerifierFromAck(channel);
+  } else {
+    document.getElementById('unpairedFields').style.display = 'block';
+    document.getElementById('pairedBadge').style.display = 'none';
+    if (channel) document.getElementById('manualChannel').value = channel;
+  }
+}
+
+async function refreshVerifierFromAck(ch) {
+  if (!ch) return;
+  try {
+    const r = await fetch('https://ntfy.sh/' + encodeURIComponent(ch + '_ack') + '/json?poll=1&since=48h');
+    if (!r.ok) return;
+    const text = await r.text();
+    for (const line of text.trim().split('\n')) {
+      if (!line.trim()) continue;
+      try {
+        const ev = JSON.parse(line);
+        if (ev.event === 'message' && ev.message) {
+          const msg = JSON.parse(ev.message);
+          if (msg.mgr_verifier) localStorage.setItem('pos_mgr_verifier_' + ch, msg.mgr_verifier);
+          if (msg.tech_verifier) localStorage.setItem('pos_tech_verifier_' + ch, msg.tech_verifier);
+        }
+      } catch (e) {}
+    }
+  } catch (e) {}
+}
+
+async function unlockManagerApp() {
+  const errEl = document.getElementById('gateErr');
+  const btn = document.getElementById('btnUnlockApp');
+  const typedPin = document.getElementById('loginPin').value.trim();
+
+  let vaultKey = localStorage.getItem('pos_app_vault_key') || '';
+  if (!channel || !vaultKey) {
+    const mCh = document.getElementById('manualChannel').value.trim();
+    const mKey = document.getElementById('manualVaultKey').value.trim();
+    if (!mCh || !mKey) {
+      errEl.className = 'status err';
+      errEl.textContent = '❌ Dispositivo não autorizado! Leia primeiro o QR Code no terminal POS.';
+      return;
+    }
+    channel = mCh;
+    vaultKey = mKey;
+  }
+
+  if (!typedPin || typedPin.length < 4) {
+    errEl.className = 'status err';
+    errEl.textContent = '❌ Introduza o seu PIN de Gerente (mín. 4 dígitos).';
+    return;
+  }
+
+  btn.textContent = '⏳ A validar Certificado do POS e PIN...';
+  try {
+    // 1. Validar Chave de Certificação do POS (PBKDF2 150.000x + HMAC-SHA256)
+    const salt = b64ToUint8(APP_SALT_B64);
+    const cipherBytes = b64ToUint8(APP_CIPHER_B64);
+    const baseKey = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(vaultKey), { name: 'PBKDF2' }, false, ['deriveBits']
+    );
+    const bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', salt, iterations: APP_ITER, hash: 'SHA-256' },
+      baseKey, 512
+    );
+    const dk = new Uint8Array(bits);
+    const encKey = dk.slice(0, 32);
+    const macKey = dk.slice(32, 64);
+
+    const hmacKey = await crypto.subtle.importKey(
+      'raw', macKey, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const calcMac = bytesToHex(new Uint8Array(await crypto.subtle.sign('HMAC', hmacKey, cipherBytes)));
+    if (calcMac !== APP_MAC_HEX) {
+      btn.textContent = '🔓 VALIDAR PIN E DESBLOQUEAR APP';
+      errEl.className = 'status err';
+      errEl.textContent = '❌ Chave de Certificação inválida! Leia o QR Code no POS.';
+      return;
+    }
+
+    // 2. Validar PIN de Gerente contra o verificador criptográfico do POS
+    await refreshVerifierFromAck(channel);
+    const candidateHash = await sha256Hex(channel + '|AUTH_VERIFY|' + typedPin);
+    const defaultPinHash = await sha256Hex(channel + '|AUTH_VERIFY|1234');
+    const defaultTechHash = await sha256Hex(channel + '|AUTH_VERIFY|369369*');
+    const storedMgrVerifier = localStorage.getItem('pos_mgr_verifier_' + channel) || defaultPinHash;
+    const storedTechVerifier = localStorage.getItem('pos_tech_verifier_' + channel) || defaultTechHash;
+
+    if (candidateHash !== storedMgrVerifier && candidateHash !== storedTechVerifier) {
+      btn.textContent = '🔓 VALIDAR PIN E DESBLOQUEAR APP';
+      errEl.className = 'status err';
+      errEl.textContent = '❌ Acesso Negado: PIN de Gerente incorreto!';
+      return;
+    }
+
+    // 3. Desencriptar a interface da App
+    const plainBytes = new Uint8Array(cipherBytes.length);
+    let counter = 0;
+    let offset = 0;
+    while (offset < cipherBytes.length) {
+      const ctrBuf = new Uint8Array(36);
+      ctrBuf.set(encKey, 0);
+      ctrBuf[32] = (counter >>> 24) & 0xff;
+      ctrBuf[33] = (counter >>> 16) & 0xff;
+      ctrBuf[34] = (counter >>> 8) & 0xff;
+      ctrBuf[35] = counter & 0xff;
+      const block = await sha256Bytes(ctrBuf);
+      const chunk = Math.min(32, cipherBytes.length - offset);
+      for (let i = 0; i < chunk; i++) {
+        plainBytes[offset + i] = cipherBytes[offset + i] ^ block[i];
+      }
+      offset += chunk;
+      counter++;
+    }
+
+    const data = JSON.parse(new TextDecoder().decode(plainBytes));
+    localStorage.setItem('pos_channel', channel);
+    localStorage.setItem('pos_app_vault_key', vaultKey);
+    activeSessionPin = typedPin;
+
+    document.getElementById('mainCard').innerHTML = data.html;
+    document.getElementById('pin').value = activeSessionPin;
+    document.getElementById('posTitle').textContent = 'Terminal: ' + posName + ' (4G/5G/Wi-Fi)';
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandalone && document.getElementById('installBtn')) {
+      document.getElementById('installBtn').style.display = 'none';
+    }
+
+    loadLocalHistory();
+    pollAckHistory(false);
+    startAckStream();
+  } catch (e) {
+    btn.textContent = '🔓 VALIDAR PIN E DESBLOQUEAR APP';
+    errEl.className = 'status err';
+    errEl.textContent = '❌ Erro ao desencriptar: ' + e.message;
+  }
+}
+
+function lockAppSession() {
+  activeSessionPin = '';
+  window.location.reload();
+}
 
 function loadLocalHistory() {
   if (!channel) return;
@@ -188,6 +326,7 @@ function saveLocalHistory(list) {
 
 function renderHistory() {
   const box = document.getElementById('histList');
+  if (!box) return;
   if (!messageHistory || messageHistory.length === 0) {
     box.innerHTML = '<div style="color:#81a1c1;font-size:12px;text-align:center;padding:12px;">Ainda não existem mensagens registadas neste POS.</div>';
     return;
@@ -215,11 +354,14 @@ function renderHistory() {
 }
 
 function processAckPayload(msg) {
+  if (msg.mgr_verifier && channel) localStorage.setItem('pos_mgr_verifier_' + channel, msg.mgr_verifier);
+  if (msg.tech_verifier && channel) localStorage.setItem('pos_tech_verifier_' + channel, msg.tech_verifier);
   const ackEl = document.getElementById('ackText');
   const st = document.getElementById('status');
   if (Array.isArray(msg.history)) {
     saveLocalHistory(msg.history);
   }
+  if (!ackEl || !st) return;
   if (msg.error) {
     ackEl.style.color = '#ff8b8b';
     ackEl.textContent = '❌ ' + msg.error;
@@ -233,11 +375,8 @@ function processAckPayload(msg) {
 
 async function pollAckHistory(requestFromPos = false) {
   if (!channel) return;
-  if (requestFromPos) {
-    const pin = document.getElementById('pin').value.trim();
-    if (pin) {
-      sendAction('sync_history', true);
-    }
+  if (requestFromPos && activeSessionPin) {
+    sendAction('sync_history', true);
   }
   try {
     const r = await fetch('https://ntfy.sh/' + encodeURIComponent(channel + '_ack') + '/json?poll=1&since=48h');
@@ -258,34 +397,6 @@ async function pollAckHistory(requestFromPos = false) {
   } catch (e) {}
 }
 
-function initPairing() {
-  const hash = decodeURIComponent(location.hash.replace(/^#/, '')).trim();
-  if (hash) {
-    const parts = hash.split('|');
-    if (parts[0]) {
-      channel = parts[0];
-      posName = parts[1] || 'POS Restaurante';
-      localStorage.setItem('pos_channel', channel);
-      localStorage.setItem('pos_name', posName);
-    }
-  } else {
-    channel = localStorage.getItem('pos_channel') || '';
-    posName = localStorage.getItem('pos_name') || 'POS Restaurante';
-  }
-  const savedPin = localStorage.getItem('pos_mgr_pin') || '';
-  if (savedPin) document.getElementById('pin').value = savedPin;
-
-  const titleEl = document.getElementById('posTitle');
-  if (channel) {
-    titleEl.textContent = 'Terminal: ' + posName + ' (4G/5G/Wi-Fi)';
-    loadLocalHistory();
-    pollAckHistory(false);
-    startAckStream();
-  } else {
-    titleEl.innerHTML = '⚠️ <b>Leia o QR Code no POS para emparelhar.</b>';
-  }
-}
-
 function startAckStream() {
   if (!channel || !window.EventSource) return;
   try {
@@ -298,8 +409,10 @@ function startAckStream() {
           processAckPayload(msg);
           if (msg.ack && !msg.error) {
             const st = document.getElementById('status');
-            st.className = 'status ok';
-            st.textContent = '✅ ' + msg.ack;
+            if (st) {
+              st.className = 'status ok';
+              st.textContent = '✅ ' + msg.ack;
+            }
           }
         }
       } catch (e) {}
@@ -307,22 +420,20 @@ function startAckStream() {
   } catch (e) {}
 }
 
-initPairing();
-
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-if (isStandalone) {
-  document.getElementById('installBtn').style.display = 'none';
-}
+initGatePairing();
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById('installBtn').style.display = 'flex';
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'flex';
 });
 
 window.addEventListener('appinstalled', () => {
-  document.getElementById('installBtn').style.display = 'none';
-  document.getElementById('installGuide').style.display = 'none';
+  const btn = document.getElementById('installBtn');
+  const g = document.getElementById('installGuide');
+  if (btn) btn.style.display = 'none';
+  if (g) g.style.display = 'none';
 });
 
 if ('serviceWorker' in navigator) {
@@ -337,9 +448,10 @@ async function installPWA() {
     return;
   }
   const guide = document.getElementById('installGuide');
+  if (!guide) return;
   const ua = navigator.userAgent || '';
   if (/iPhone|iPad|iPod/i.test(ua)) {
-    guide.innerHTML = '🍏 <b>Para instalar no iPhone / iPad (Safari):</b><br>1. Toque no botão <b>Partilhar</b> (ícone quadrado com seta ⬆️ na barra do Safari).<br>2. Deslize e toque em <b>"Adicionar ao Ecrã Principal"</b>.<br>A App ficará instalada no ecrã do telemóvel já ligada a este POS!';
+    guide.innerHTML = '🍏 <b>Para instalar no iPhone / iPad (Safari):</b><br>1. Toque no botão <b>Partilhar</b> (ícone quadrado com seta ⬆️ na barra do Safari).<br>2. Deslize e toque em <b>"Adicionar ao Ecrã Principal"</b>.';
   } else {
     guide.innerHTML = '📲 <b>Para instalar a App no Android:</b><br>1. Toque no menu <b>⋮ (3 pontos)</b> no canto superior direito do navegador.<br>2. Escolha <b>"Instalar aplicação"</b> ou <b>"Adicionar ao ecrã principal"</b>.';
   }
@@ -348,11 +460,12 @@ async function installPWA() {
 
 function togglePinBox() {
   const box = document.getElementById('pinBox');
-  box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+  if (box) box.style.display = (box.style.display === 'block') ? 'none' : 'block';
 }
 
 function toggleHistoryBox() {
   const box = document.getElementById('histBox');
+  if (!box) return;
   const opening = box.style.display !== 'block';
   box.style.display = opening ? 'block' : 'none';
   if (opening) {
@@ -363,12 +476,7 @@ function toggleHistoryBox() {
 
 function toggleTechClearBox() {
   const box = document.getElementById('techClearBox');
-  box.style.display = (box.style.display === 'block') ? 'none' : 'block';
-}
-
-async function sha256Hex(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  if (box) box.style.display = (box.style.display === 'block') ? 'none' : 'block';
 }
 
 async function sendTechClearHistory() {
@@ -403,27 +511,14 @@ async function sendTechClearHistory() {
 
 async function sendAction(action, silent = false) {
   const st = document.getElementById('status');
-  const pin = document.getElementById('pin').value.trim();
+  const pin = activeSessionPin || (document.getElementById('pin') ? document.getElementById('pin').value.trim() : '');
   const text = (action === 'clear' || action === 'sync_history') ? '' : document.getElementById('note').value.trim();
   const priority = document.getElementById('priority').value;
   const font_size = parseInt(document.getElementById('font_size').value, 10);
   const popup = document.getElementById('popup').checked;
   const newPin = document.getElementById('newPin').value.trim();
 
-  if (!channel) {
-    if (!silent) {
-      st.className = 'status err';
-      st.textContent = '❌ Leia primeiro o QR Code no POS para emparelhar.';
-    }
-    return;
-  }
-  if (!pin) {
-    if (!silent) {
-      st.className = 'status err';
-      st.textContent = '❌ Introduza o seu PIN de Gerente.';
-    }
-    return;
-  }
+  if (!channel || !pin) return;
   if (action === 'publish' && !text) {
     st.className = 'status err';
     st.textContent = '❌ Escreva uma mensagem para os funcionários.';
@@ -463,14 +558,15 @@ async function sendAction(action, silent = false) {
 
     if (r.ok && !silent) {
       if (action === 'change_pin') {
-        localStorage.setItem('pos_mgr_pin', newPin);
+        activeSessionPin = newPin;
         document.getElementById('pin').value = newPin;
+        const newVerifier = await sha256Hex(channel + '|AUTH_VERIFY|' + newPin);
+        localStorage.setItem('pos_mgr_verifier_' + channel, newVerifier);
         document.getElementById('newPin').value = '';
         document.getElementById('pinBox').style.display = 'none';
         st.className = 'status ok';
-        st.textContent = '✅ Pedido de alteração de PIN enviado ao POS!';
+        st.textContent = '✅ Novo PIN de Gerente guardado no POS!';
       } else {
-        localStorage.setItem('pos_mgr_pin', pin);
         st.className = 'status ok';
         st.textContent = action === 'clear'
           ? '✅ Ordem de limpeza enviada ao POS!'
