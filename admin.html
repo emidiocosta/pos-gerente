@@ -257,6 +257,24 @@ async function xorCrypt(dataBytes, keyStr) {
   return out;
 }
 
+async function downloadBackupFile(url, fname) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const blob = await r.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objUrl;
+    a.download = fname || "POS_Cofre_Emergencia.tar.gz";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(objUrl), 15000);
+  } catch (e) {
+    window.open(url, "_blank");
+  }
+}
+
 function addAckLog(msg) {
   ackLogs.unshift(msg);
   ackLogs = ackLogs.slice(0, 30);
@@ -270,7 +288,10 @@ function addAckLog(msg) {
     }
     const items = Array.isArray(m.applied) ? m.applied.join(", ") : (m.status || "OK");
     const escRep = m.report ? `<div class="diag-pre">${String(m.report).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : "";
-    return `<div class="ack-item"><b>✔ ${m.hostname || 'POS'} (${m.ip || ''})</b><span style="float:right;color:#81a1c1;">${m.ts || ''}</span><br><span style="color:#a3be8c;font-weight:700;">${m.status || 'Atualizado'}:</span> ${items}${escRep}</div>`;
+    const dlBtn = m.download_url
+      ? `<button onclick="downloadBackupFile('${m.download_url}', '${m.download_name || 'POS_Cofre_Emergencia.tar.gz'}')" style="margin-top:8px; width:100%; background:#a3be8c; color:#171a21; border:none; border-radius:8px; padding:10px; font-weight:800; font-size:12.5px; cursor:pointer;">📥 DESCARREGAR BACKUP PARA O TELEMÓVEL (${m.download_name || 'Backup.tar.gz'}${m.download_size_mb ? ' • ' + m.download_size_mb + ' MB' : ''})</button>`
+      : "";
+    return `<div class="ack-item"><b>✔ ${m.hostname || 'POS'} (${m.ip || ''})</b><span style="float:right;color:#81a1c1;">${m.ts || ''}</span><br><span style="color:#a3be8c;font-weight:700;">${m.status || 'Atualizado'}:</span> ${items}${escRep}${dlBtn}</div>`;
   }).join("");
 }
 
