@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#171a21">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-<title>Cofre Restrito — Between Dimensions</title>
+<title>Cofre 2FA Restrito — Between Dimensions</title>
 <style>
   * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   body { margin: 0; padding: 12px; background: #171a21; color: #eceff4; }
@@ -17,7 +17,7 @@
   .sub { font-size: 12px; color: #a3be8c; margin-bottom: 14px; font-weight: 600; }
   .safe-note { background: #1b2028; border: 1px solid #a3be8c55; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; color: #d8dee9; line-height: 1.45; margin-bottom: 12px; }
   .safe-note b { color: #a3be8c; }
-  label { display: block; font-size: 11.5px; font-weight: 700; color: #88c0d0; margin-bottom: 5px; margin-top: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+  label { display: block; font-size: 11.5px; font-weight: 700; color: #88c0d0; margin-bottom: 5px; margin-top: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
   input, select { width: 100%; background: #171a21; border: 1px solid #434c5e; color: #ffffff; border-radius: 9px; padding: 11px 12px; font-size: 15px; outline: none; }
   input:focus { border-color: #88c0d0; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -25,7 +25,7 @@
   .section-box { background: #1d212a; border: 1px solid #3b4252; border-radius: 12px; padding: 12px; margin-top: 12px; }
   .section-title { font-size: 12px; font-weight: 800; color: #ebcb8b; margin-bottom: 4px; }
   .section-hint { font-size: 11px; color: #81a1c1; margin-bottom: 8px; }
-  .btn { width: 100%; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 12px; transition: opacity 0.15s; }
+  .btn { width: 100%; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 14px; transition: opacity 0.15s; }
   .btn:active { opacity: 0.85; }
   .btn-push { background: #a3be8c; color: #171a21; }
   .btn-ping { background: #5e81ac; color: #ffffff; margin-top: 8px; padding: 10px; font-size: 12.5px; }
@@ -43,28 +43,34 @@
 </head>
 <body>
 <div class="card" id="appRoot">
-  <div style="text-align:center;padding:12px 4px;">
-    <img src="./bd-logo.png" alt="Between Dimensions" style="height:32px;margin-bottom:14px;opacity:0.9;">
-    <h1 style="justify-content:center;color:#ebcb8b;font-size:18px;margin-bottom:6px;">🔒 Cofre de Administração Técnica</h1>
-    <div style="font-size:12.5px;color:#81a1c1;margin-bottom:18px;line-height:1.45;">
-      Esta página está encriptada com <b>PBKDF2-HMAC-SHA256 (150.000 iterações)</b>.<br>
-      Sem a Chave Mestra Técnica, o painel, os canais e os terminais POS não existem no código-fonte.
+  <div style="text-align:center;padding:8px 4px;">
+    <img src="./bd-logo.png" alt="Between Dimensions" style="height:30px;margin-bottom:12px;opacity:0.9;">
+    <h1 style="justify-content:center;color:#ebcb8b;font-size:18px;margin-bottom:6px;">🔒 Cofre Central 2FA (Dupla Autenticação)</h1>
+    <div style="font-size:12px;color:#81a1c1;margin-bottom:14px;line-height:1.45;">
+      Protegido por <b>Password Mestra Complexa (PBKDF2 150.000x)</b> + <b>Código 2FA Authenticator (TOTP 6 dígitos)</b>.<br>
+      Sem ambos os fatores, o painel e os canais não existem.
     </div>
-    <label style="text-align:left;">🔑 Chave Mestra Técnica</label>
-    <input type="password" id="vaultKey" placeholder="Introduza a Chave Mestra..." onkeydown="if(event.key==='Enter')unlockVault()">
-    <button class="btn btn-push" id="unlockBtn" onclick="unlockVault()">🔓 DESBLOQUEAR COFRE CENTRAL</button>
+
+    <label style="text-align:left;">🔑 1º Fator: Password Mestra Complexa</label>
+    <input type="password" id="vaultKey" placeholder="Introduza a Password Mestra Complexa..." autocomplete="current-password">
+
+    <label style="text-align:left;">📱 2º Fator: Código 2FA Authenticator (6 Dígitos)</label>
+    <input type="text" id="vaultTotp" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos do telemóvel..." style="letter-spacing:4px;font-weight:800;text-align:center;font-size:18px;" onkeydown="if(event.key==='Enter')unlockVault()">
+
+    <button class="btn btn-push" id="unlockBtn" onclick="unlockVault()">🔓 VALIDAR 2FA E DESBLOQUEAR COFRE</button>
     <div id="vaultErr" class="status"></div>
   </div>
 </div>
 
 <script>
-const VAULT_SALT_B64 = "3s+mRZWbg0MW9YaWVmHCZg==";
+const VAULT_SALT_B64 = "OMO1IQaUEbJeC6VrWY3bnA==";
 const VAULT_ITER = 150000;
-const VAULT_MAC_HEX = "740178e8b36cf138b54fe28f9900560d7658715bcd4aa75b8fc6a8407862d0b7";
-const VAULT_CIPHER_B64 = "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";
+const VAULT_MAC_HEX = "39f656424056eab11f81113efa7b9ae39f7eb4b2a9e3e6ed200cfdf57a503eb6";
+const VAULT_CIPHER_B64 = "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";
 
 let FLEET_CHANNEL = "";
 let FLEET_MASTER_SALT = "";
+let TOTP_SECRET_B32 = "";
 let ackLogs = [];
 
 function b64ToUint8(b64) {
@@ -84,6 +90,53 @@ function bytesToHex(u8) {
   return Array.from(u8).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+function base32ToUint8(b32) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const clean = b32.toUpperCase().replace(/[^A-Z2-7]/g, "");
+  let bits = "";
+  for (let i = 0; i < clean.length; i++) {
+    bits += alphabet.indexOf(clean[i]).toString(2).padStart(5, "0");
+  }
+  const out = new Uint8Array(Math.floor(bits.length / 8));
+  for (let i = 0; i < out.length; i++) {
+    out[i] = parseInt(bits.slice(i * 8, i * 8 + 8), 2);
+  }
+  return out;
+}
+
+async function computeTotpCode(secretB32, counter) {
+  const keyBytes = base32ToUint8(secretB32);
+  const msg = new Uint8Array(8);
+  let c = Math.floor(counter);
+  for (let i = 7; i >= 0; i--) {
+    msg[i] = c & 0xff;
+    c = Math.floor(c / 256);
+  }
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw", keyBytes, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]
+  );
+  const sig = new Uint8Array(await crypto.subtle.sign("HMAC", cryptoKey, msg));
+  const offset = sig[sig.length - 1] & 0x0f;
+  const code = (
+    ((sig[offset] & 0x7f) << 24) |
+    ((sig[offset + 1] & 0xff) << 16) |
+    ((sig[offset + 2] & 0xff) << 8) |
+    (sig[offset + 3] & 0xff)
+  ) % 1000000;
+  return String(code).padStart(6, "0");
+}
+
+async function verifyTotpWindow(secretB32, typedCode) {
+  const clean = String(typedCode).trim();
+  if (!/^\d{6}$/.test(clean)) return false;
+  const curCounter = Math.floor(Date.now() / 1000 / 30);
+  for (const delta of [-1, 0, 1]) {
+    const expected = await computeTotpCode(secretB32, curCounter + delta);
+    if (expected === clean) return true;
+  }
+  return false;
+}
+
 async function sha256Bytes(uint8Arr) {
   const buf = await crypto.subtle.digest("SHA-256", uint8Arr);
   return new Uint8Array(buf);
@@ -95,14 +148,22 @@ async function sha256Hex(str) {
 
 async function unlockVault() {
   const keyStr = document.getElementById("vaultKey").value.trim();
+  const totpStr = document.getElementById("vaultTotp").value.trim();
   const errEl = document.getElementById("vaultErr");
   const btn = document.getElementById("unlockBtn");
+
   if (!keyStr) {
     errEl.className = "status err";
-    errEl.textContent = "❌ Introduza a Chave Mestra Técnica.";
+    errEl.textContent = "❌ Introduza a Password Mestra Complexa (1º Fator).";
     return;
   }
-  btn.textContent = "⏳ A desencriptar cofre (PBKDF2 150.000x)...";
+  if (!/^\d{6}$/.test(totpStr)) {
+    errEl.className = "status err";
+    errEl.textContent = "❌ Introduza os 6 dígitos do Google / Microsoft Authenticator (2º Fator).";
+    return;
+  }
+
+  btn.textContent = "⏳ A validar Password Mestra + Código 2FA...";
   try {
     const salt = b64ToUint8(VAULT_SALT_B64);
     const cipherBytes = b64ToUint8(VAULT_CIPHER_B64);
@@ -124,9 +185,9 @@ async function unlockVault() {
     const calcMac = bytesToHex(new Uint8Array(sigBuf));
 
     if (calcMac !== VAULT_MAC_HEX) {
-      btn.textContent = "🔓 DESBLOQUEAR COFRE CENTRAL";
+      btn.textContent = "🔓 VALIDAR 2FA E DESBLOQUEAR COFRE";
       errEl.className = "status err";
-      errEl.textContent = "❌ Acesso Negado: Chave Mestra incorreta!";
+      errEl.textContent = "❌ Acesso Negado: Password Mestra Complexa incorreta!";
       return;
     }
 
@@ -150,15 +211,24 @@ async function unlockVault() {
     }
 
     const data = JSON.parse(new TextDecoder().decode(plainBytes));
+    const totpOk = await verifyTotpWindow(data.totp_secret, totpStr);
+    if (!totpOk) {
+      btn.textContent = "🔓 VALIDAR 2FA E DESBLOQUEAR COFRE";
+      errEl.className = "status err";
+      errEl.textContent = "❌ Acesso Negado: Código 2FA de 6 dígitos inválido ou expirado!";
+      return;
+    }
+
     FLEET_CHANNEL = data.fleet_channel;
     FLEET_MASTER_SALT = data.fleet_salt;
+    TOTP_SECRET_B32 = data.totp_secret;
     document.getElementById("appRoot").innerHTML = data.html;
     document.getElementById("curTechPin").value = keyStr;
     startFleetAckListener();
   } catch (e) {
-    btn.textContent = "🔓 DESBLOQUEAR COFRE CENTRAL";
+    btn.textContent = "🔓 VALIDAR 2FA E DESBLOQUEAR COFRE";
     errEl.className = "status err";
-    errEl.textContent = "❌ Erro ao desencriptar: " + e.message;
+    errEl.textContent = "❌ Erro na verificação 2FA: " + e.message;
   }
 }
 
@@ -238,7 +308,7 @@ async function broadcastPolicy(isPing = false) {
 
   if (!authPin) {
     st.className = "status err";
-    st.textContent = "❌ Introduza o PIN Técnico Atual para assinar e encriptar a ordem.";
+    st.textContent = "❌ Introduza a Chave de Assinatura.";
     return;
   }
 
@@ -250,17 +320,21 @@ async function broadcastPolicy(isPing = false) {
 
   st.className = "status ok";
   st.textContent = isPing
-    ? "⏳ A interrogar todos os terminais POS da frota..."
-    : "⏳ A encriptar e publicar nova Política de Segurança para a frota POS...";
+    ? "⏳ A gerar Token 2FA e interrogar todos os terminais POS..."
+    : "⏳ A assinar com Token 2FA e publicar Política de Segurança...";
 
   try {
+    const nowSec = Math.floor(Date.now() / 1000);
     const policy_id = String(Date.now());
-    const ts = String(Math.floor(Date.now() / 1000));
+    const ts = String(nowSec);
+    const totp = await computeTotpCode(TOTP_SECRET_B32, Math.floor(nowSec / 30));
+
     const payloadObj = isPing
-      ? { action: "ping_fleet", target_host }
+      ? { action: "ping_fleet", target_host, totp }
       : {
           action: "update_security",
           target_host,
+          totp,
           new_tech_pin,
           manager_pin,
           linux_pos_password,
@@ -280,14 +354,10 @@ async function broadcastPolicy(isPing = false) {
     });
 
     if (r.ok) {
-      if (!isPing && new_tech_pin) {
-        document.getElementById("curTechPin").value = new_tech_pin;
-        document.getElementById("newTechPin").value = "";
-      }
       st.className = "status ok";
       st.textContent = isPing
-        ? "✅ Ping enviado! Veja abaixo os terminais POS que responderam."
-        : "✅ Política encriptada publicada! Os terminais POS estão a confirmar abaixo em tempo real.";
+        ? "✅ Ping 2FA enviado! Veja abaixo os terminais POS que responderam."
+        : "✅ Política 2FA encriptada publicada! Os terminais POS estão a confirmar abaixo.";
     } else {
       st.className = "status err";
       st.textContent = "❌ Erro ao comunicar (" + r.status + ")";
