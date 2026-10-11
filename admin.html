@@ -226,6 +226,7 @@ async function unlockVault() {
     TOTP_SECRET_B32 = data.totp_secret;
     document.getElementById("appRoot").innerHTML = data.html;
     document.getElementById("curTechPin").value = keyStr;
+    injectDeviceControlPanel();
     startFleetAckListener();
   } catch (e) {
     btn.textContent = "🔓 VALIDAR 2FA E DESBLOQUEAR COFRE";
@@ -257,6 +258,96 @@ async function xorCrypt(dataBytes, keyStr) {
   return out;
 }
 
+const DEVICE_AUTH_SALT = "BD_ADMIN_DEVICE_AUTH_2026_9F8E";
+const APP_VAULT_KEY_MGR = "BD#PosApp$2026!Key";
+
+async function adminDecideDevice(ch, devId, devName, approve) {
+  const st = document.getElementById("status");
+  const targetCh = (ch || "pos_xd_be487236ba3240").trim();
+  const cleanId = (devId || "").trim().toUpperCase();
+  if (!cleanId) {
+    if (st) {
+      st.className = "status err";
+      st.textContent = "❌ Introduza o ID do Telemóvel (ex: MGR-XXXX-XXXX).";
+    }
+    return;
+  }
+  if (st) {
+    st.className = "status ok";
+    st.textContent = approve
+      ? "⏳ A autorizar telemóvel " + cleanId + "..."
+      : "⏳ A revogar/bloquear telemóvel " + cleanId + "...";
+  }
+  try {
+    const ts = String(Math.floor(Date.now() / 1000));
+    const action = approve ? "admin_approve_device" : "admin_revoke_device";
+    const sig = await sha256Hex(`${targetCh}|${action}|${cleanId}|${ts}|${DEVICE_AUTH_SALT}`);
+    const devToken = approve
+      ? await sha256Hex(`${targetCh}|DEV_APPROVED|${cleanId}|${DEVICE_AUTH_SALT}`)
+      : "";
+
+    await fetch("https://ntfy.sh/" + encodeURIComponent(targetCh), {
+      method: "POST",
+      body: JSON.stringify({ action, device_id: cleanId, device_name: devName || cleanId, ts, sig })
+    });
+
+    await fetch("https://ntfy.sh/" + encodeURIComponent(targetCh + "_ack"), {
+      method: "POST",
+      body: JSON.stringify({
+        device_auth_update: {
+          device_id: cleanId,
+          device_name: devName || cleanId,
+          approved: approve,
+          device_token: devToken,
+          app_vault_key: approve ? APP_VAULT_KEY_MGR : ""
+        },
+        revoked_device_id: approve ? "" : cleanId,
+        status: approve ? "Telemóvel Autorizado pelo Admin" : "Telemóvel Revogado pelo Admin",
+        ack: (approve ? "Autorizado" : "Revogado") + " pelo Administrador Central"
+      })
+    });
+
+    if (st) {
+      st.className = approve ? "status ok" : "status err";
+      st.textContent = approve
+        ? "✅ Telemóvel " + cleanId + " (" + (devName || "Gerente") + ") AUTORIZADO! A App do gerente já desbloqueou e abre direto sem pedir password."
+        : "🚫 Telemóvel " + cleanId + " BLOQUEADO / REVOGADO com sucesso!";
+    }
+  } catch (e) {
+    if (st) {
+      st.className = "status err";
+      st.textContent = "❌ Erro: " + e.message;
+    }
+  }
+}
+
+function injectDeviceControlPanel() {
+  const ackPanel = document.querySelector(".ack-panel");
+  if (!ackPanel || document.getElementById("devCtrlBox")) return;
+  const box = document.createElement("div");
+  box.id = "devCtrlBox";
+  box.className = "section-box";
+  box.innerHTML = `
+    <div class="section-title">📱 Controlo Central de Telemóveis dos Gerentes (Autorizar / Revogar)</div>
+    <div class="section-hint">Quando um gerente pede acesso na App, aparece abaixo com botões de 1 toque. Também pode autorizar ou bloquear manualmente qualquer ID de telemóvel aqui:</div>
+    <div class="grid2">
+      <div>
+        <label style="margin-top:2px;">ID do Telemóvel (MGR-...)</label>
+        <input type="text" id="manualDevId" placeholder="Ex: MGR-8F4A-29C1" style="text-transform:uppercase;font-family:monospace;font-weight:800;">
+      </div>
+      <div>
+        <label style="margin-top:2px;">Nome / Gerente</label>
+        <input type="text" id="manualDevName" placeholder="Ex: João Gerente">
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:8px;">
+      <button class="btn" style="margin-top:0;padding:10px;font-size:12.5px;background:#a3be8c;color:#171a21;" onclick="adminDecideDevice('pos_xd_be487236ba3240', document.getElementById('manualDevId').value, document.getElementById('manualDevName').value, true)">✅ AUTORIZAR TELEMÓVEL</button>
+      <button class="btn" style="margin-top:0;padding:10px;font-size:12.5px;background:#bf616a;color:#ffffff;" onclick="adminDecideDevice('pos_xd_be487236ba3240', document.getElementById('manualDevId').value, document.getElementById('manualDevName').value, false)">🚫 REVOGAR / BLOQUEAR</button>
+    </div>
+  `;
+  ackPanel.parentNode.insertBefore(box, ackPanel);
+}
+
 async function downloadBackupFile(url, fname) {
   try {
     const r = await fetch(url);
@@ -276,6 +367,7 @@ async function downloadBackupFile(url, fname) {
 }
 
 function addAckLog(msg) {
+  injectDeviceControlPanel();
   ackLogs.unshift(msg);
   ackLogs = ackLogs.slice(0, 30);
   const box = document.getElementById("ackList");
@@ -291,7 +383,20 @@ function addAckLog(msg) {
     const dlBtn = m.download_url
       ? `<button onclick="downloadBackupFile('${m.download_url}', '${m.download_name || 'POS_Cofre_Emergencia.tar.gz'}')" style="margin-top:8px; width:100%; background:#a3be8c; color:#171a21; border:none; border-radius:8px; padding:10px; font-weight:800; font-size:12.5px; cursor:pointer;">📥 DESCARREGAR BACKUP PARA O TELEMÓVEL (${m.download_name || 'Backup.tar.gz'}${m.download_size_mb ? ' • ' + m.download_size_mb + ' MB' : ''})</button>`
       : "";
-    return `<div class="ack-item"><b>✔ ${m.hostname || 'POS'} (${m.ip || ''})</b><span style="float:right;color:#81a1c1;">${m.ts || ''}</span><br><span style="color:#a3be8c;font-weight:700;">${m.status || 'Atualizado'}:</span> ${items}${escRep}${dlBtn}</div>`;
+    let devBtns = "";
+    if (m.device_request && m.device_request.device_id) {
+      const dr = m.device_request;
+      const safeName = String(dr.device_name || "Gerente").replace(/'/g, "");
+      const safeCh = String(dr.channel || "pos_xd_be487236ba3240").replace(/'/g, "");
+      const safeId = String(dr.device_id).replace(/'/g, "");
+      devBtns = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <button onclick="adminDecideDevice('${safeCh}', '${safeId}', '${safeName}', true)" style="background:#a3be8c;color:#171a21;border:none;border-radius:7px;padding:9px;font-weight:800;font-size:12px;cursor:pointer;">✅ AUTORIZAR (${safeId})</button>
+          <button onclick="adminDecideDevice('${safeCh}', '${safeId}', '${safeName}', false)" style="background:#bf616a;color:#ffffff;border:none;border-radius:7px;padding:9px;font-weight:800;font-size:12px;cursor:pointer;">🚫 BLOQUEAR (${safeId})</button>
+        </div>
+      `;
+    }
+    return `<div class="ack-item"><b>✔ ${m.hostname || 'POS'} (${m.ip || ''})</b><span style="float:right;color:#81a1c1;">${m.ts || ''}</span><br><span style="color:#a3be8c;font-weight:700;">${m.status || 'Atualizado'}:</span> ${items}${escRep}${dlBtn}${devBtns}</div>`;
   }).join("");
 }
 

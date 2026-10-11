@@ -11,11 +11,11 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<title>Acesso Privado — Gerência POS</title>
+<title>Gerência POS — Quadro da Equipa</title>
 <style>
   * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   body { margin: 0; padding: 12px; background: #1e222b; color: #eceff4; }
-  .card { max-width: 520px; margin: 10px auto; background: #262b36; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.55); border: 1px solid #3b4252; }
+  .card { max-width: 520px; margin: 6px auto; background: #262b36; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.55); border: 1px solid #3b4252; }
   .top-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
   .title-wrap { display: flex; align-items: center; gap: 8px; }
   h1 { font-size: 18px; margin: 0; color: #ebcb8b; }
@@ -71,36 +71,37 @@
 <div class="card" id="mainCard">
   <div id="gateBox" style="text-align:center;padding:8px 4px;">
     <img src="./bd-logo.png" alt="Between Dimensions" style="height:28px;margin-bottom:10px;opacity:0.9;">
-    <h1 style="justify-content:center;color:#ebcb8b;font-size:18px;margin-bottom:6px;">🔒 Acesso Privado — Gerência POS</h1>
+    <h1 style="justify-content:center;color:#ebcb8b;font-size:18px;margin-bottom:6px;">🔒 Autorização Central de Dispositivo</h1>
     <div id="gateSub" style="font-size:12px;color:#88c0d0;margin-bottom:14px;line-height:1.45;">
-      Esta aplicação está encriptada (PBKDF2 150.000x) e restrita a telemóveis autorizados pelo terminal POS.
+      Este telemóvel aguarda <b>autorização única do Administrador</b>.<br>
+      Assim que for autorizado, a App abre sempre direto sem pedir qualquer password ou PIN!
     </div>
 
-    <div id="unpairedFields" style="display:none;text-align:left;background:#1e222b;padding:12px;border-radius:10px;border:1px solid #bf616a66;margin-bottom:10px;">
-      <div style="font-size:12px;color:#ff8b8b;font-weight:700;margin-bottom:6px;">⚠️ Dispositivo Não Emparelhado</div>
-      <div style="font-size:11.5px;color:#d8dee9;margin-bottom:8px;line-height:1.4;">
-        Para autorizar este telemóvel, abra <b>Notas à Equipa</b> no terminal POS (com PIN) e leia o <b>QR Code de Emparelhamento</b>, ou introduza os dados de certificação do terminal:
+    <div style="background:#1e222b;padding:12px;border-radius:10px;border:1px solid #5e81ac66;margin-bottom:12px;text-align:left;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:#88c0d0;font-weight:700;">ID DESTE TELEMÓVEL:</span>
+        <span id="lblDeviceId" style="font-family:monospace;font-size:13px;color:#ebcb8b;font-weight:800;">MGR-...</span>
       </div>
-      <label style="margin-top:4px;">📡 ID do Canal Secreto do POS</label>
-      <input type="text" id="manualChannel" placeholder="Ex: pos_xd_...">
-      <label>🔐 Chave de Certificação da App</label>
-      <input type="password" id="manualVaultKey" placeholder="Chave embutida no QR Code do POS...">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+        <span style="font-size:11px;color:#88c0d0;font-weight:700;">TERMINAL POS:</span>
+        <span id="pairedPosName" style="font-size:12.5px;color:#a3be8c;font-weight:800;">A detetar...</span>
+      </div>
     </div>
 
-    <div id="pairedBadge" style="display:none;background:#1e222b;padding:10px;border-radius:10px;border:1px solid #a3be8c66;margin-bottom:10px;">
-      <div style="font-size:11px;color:#88c0d0;font-weight:700;">TERMINAL POS EMPARELHADO:</div>
-      <div id="pairedPosName" style="font-size:14px;color:#a3be8c;font-weight:800;margin-top:2px;">POS Restaurante</div>
+    <div id="unpairedChannelBox" style="display:none;text-align:left;margin-bottom:10px;">
+      <label style="margin-top:4px;">📡 Código do Canal do POS (se não leu o QR Code)</label>
+      <input type="text" id="manualChannel" placeholder="Ex: pos_xd_be487236ba3240">
     </div>
 
-    <label style="text-align:left;">🔑 PIN Pessoal de Gerente</label>
-    <input type="password" id="loginPin" inputmode="numeric" placeholder="Introduza o seu PIN de Gerente para desbloquear..." style="text-align:center;font-size:17px;font-weight:800;letter-spacing:3px;" onkeydown="if(event.key==='Enter')unlockManagerApp()">
+    <label style="text-align:left;">👤 Nome do Gerente / Identificação do Telemóvel</label>
+    <input type="text" id="reqDeviceName" placeholder="Ex: João — Gerente (iPhone)" style="font-weight:700;">
 
-    <button class="btn btn-send" id="btnUnlockApp" onclick="unlockManagerApp()">🔓 VALIDAR PIN E DESBLOQUEAR APP</button>
+    <button class="btn btn-send" id="btnReqAuth" onclick="sendDeviceAuthRequest()">📲 PEDIR AUTORIZAÇÃO AO ADMINISTRADOR</button>
     <div id="gateErr" class="status"></div>
 
     <div class="footer">
       <img src="./bd-logo.png" alt="BD" class="bd-footer-logo">
-      <span>Between Dimensions • Proteção Zero-Knowledge</span>
+      <span>Between Dimensions • Controlo Central de Dispositivos</span>
     </div>
   </div>
 </div>
@@ -108,14 +109,27 @@
 <script>
 const APP_SALT_B64 = "QkRfUE9TX01HUl8yMDI2IQ==";
 const APP_ITER = 150000;
-const APP_MAC_HEX = "a1ca4b0fdab39f749b4ac14bfc89f39c05b127fb96a68fc9cb8b62373cc4061e";
-const APP_CIPHER_B64 = "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";
+const APP_MAC_HEX = "15e0141e1066034df3c915a27d644e8719e9cd51cf392d0dae5d565df085fa09";
+const APP_CIPHER_B64 = "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";
+const FLEET_ACK_CHANNEL = "pos_bd_priv_v2_7f3a9d8e4c1b6052a8f1e3d9_ack";
+const DEFAULT_CHANNEL = "pos_xd_be487236ba3240";
 
 let deferredPrompt = null;
 let channel = '';
-let posName = 'POS Restaurante';
-let activeSessionPin = '';
+let posName = 'Restaurante-master';
+let deviceId = '';
+let deviceToken = '';
 let messageHistory = [];
+
+function getOrCreateDeviceId() {
+  let did = localStorage.getItem('pos_mgr_device_id');
+  if (!did) {
+    const rnd = Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    did = 'MGR-' + rnd.slice(0, 4) + '-' + rnd.slice(4, 8);
+    localStorage.setItem('pos_mgr_device_id', did);
+  }
+  return did;
+}
 
 function b64ToUint8(b64) {
   const bin = atob(b64);
@@ -137,44 +151,64 @@ async function sha256Hex(str) {
   return bytesToHex(await sha256Bytes(new TextEncoder().encode(str)));
 }
 
-function initGatePairing() {
+async function initGatePairing() {
+  deviceId = getOrCreateDeviceId();
+  const lblDid = document.getElementById('lblDeviceId');
+  if (lblDid) lblDid.textContent = deviceId;
+
+  const savedDevName = localStorage.getItem('pos_mgr_device_name') || '';
+  if (savedDevName && document.getElementById('reqDeviceName')) {
+    document.getElementById('reqDeviceName').value = savedDevName;
+  }
+
   const hash = decodeURIComponent(location.hash.replace(/^#/, '')).trim();
   if (hash) {
     const parts = hash.split('|');
     if (parts[0]) {
       channel = parts[0];
-      posName = parts[1] || 'POS Restaurante';
+      posName = parts[1] || 'Restaurante-master';
       localStorage.setItem('pos_channel', channel);
       localStorage.setItem('pos_name', posName);
-      if (parts[2]) localStorage.setItem('pos_app_vault_key', parts[2]);
-      if (parts[3]) localStorage.setItem('pos_mgr_verifier_' + channel, parts[3]);
-      // Limpar imediatamente o código secreto da barra de endereços!
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', window.location.pathname);
       }
     }
   } else {
-    channel = localStorage.getItem('pos_channel') || '';
-    posName = localStorage.getItem('pos_name') || 'POS Restaurante';
+    channel = localStorage.getItem('pos_channel') || DEFAULT_CHANNEL;
+    posName = localStorage.getItem('pos_name') || 'Restaurante-master';
   }
 
-  const savedVaultKey = localStorage.getItem('pos_app_vault_key') || '';
-  if (channel && savedVaultKey) {
-    document.getElementById('unpairedFields').style.display = 'none';
-    document.getElementById('pairedBadge').style.display = 'block';
-    document.getElementById('pairedPosName').textContent = posName + ' (' + channel.slice(0, 12) + ')';
-    refreshVerifierFromAck(channel);
-  } else {
-    document.getElementById('unpairedFields').style.display = 'block';
-    document.getElementById('pairedBadge').style.display = 'none';
-    if (channel) document.getElementById('manualChannel').value = channel;
+  const pairedEl = document.getElementById('pairedPosName');
+  if (pairedEl) pairedEl.textContent = posName + ' (' + channel.slice(0, 12) + ')';
+
+  // Escutar em tempo real aprovações ou revogações do Administrador
+  startAckStream();
+  await checkDeviceAuthorizationStatus();
+
+  const savedVaultKey = localStorage.getItem('pos_app_vault_key_' + channel) || '';
+  const savedDevToken = localStorage.getItem('pos_dev_token_' + channel) || '';
+  const isRevoked = localStorage.getItem('pos_dev_revoked_' + channel) === '1';
+
+  if (isRevoked) {
+    const errEl = document.getElementById('gateErr');
+    if (errEl) {
+      errEl.className = 'status err';
+      errEl.textContent = '🚫 Este telemóvel foi desautorizado pelo Administrador Central.';
+    }
+    return;
+  }
+
+  // Se este telemóvel já foi autorizado pelo Administrador, abre DIRETO sem pedir PIN nem password!
+  if (channel && savedVaultKey && savedDevToken) {
+    deviceToken = savedDevToken;
+    await unlockAuthorizedApp(savedVaultKey);
   }
 }
 
-async function refreshVerifierFromAck(ch) {
-  if (!ch) return;
+async function checkDeviceAuthorizationStatus() {
+  if (!channel) return;
   try {
-    const r = await fetch('https://ntfy.sh/' + encodeURIComponent(ch + '_ack') + '/json?poll=1&since=48h');
+    const r = await fetch('https://ntfy.sh/' + encodeURIComponent(channel + '_ack') + '/json?poll=1&since=48h');
     if (!r.ok) return;
     const text = await r.text();
     for (const line of text.trim().split('\n')) {
@@ -183,41 +217,112 @@ async function refreshVerifierFromAck(ch) {
         const ev = JSON.parse(line);
         if (ev.event === 'message' && ev.message) {
           const msg = JSON.parse(ev.message);
-          if (msg.mgr_verifier) localStorage.setItem('pos_mgr_verifier_' + ch, msg.mgr_verifier);
-          if (msg.tech_verifier) localStorage.setItem('pos_tech_verifier_' + ch, msg.tech_verifier);
+          handleAuthUpdatePacket(msg);
         }
       } catch (e) {}
     }
   } catch (e) {}
 }
 
-async function unlockManagerApp() {
-  const errEl = document.getElementById('gateErr');
-  const btn = document.getElementById('btnUnlockApp');
-  const typedPin = document.getElementById('loginPin').value.trim();
-
-  let vaultKey = localStorage.getItem('pos_app_vault_key') || '';
-  if (!channel || !vaultKey) {
-    const mCh = document.getElementById('manualChannel').value.trim();
-    const mKey = document.getElementById('manualVaultKey').value.trim();
-    if (!mCh || !mKey) {
-      errEl.className = 'status err';
-      errEl.textContent = '❌ Dispositivo não autorizado! Leia primeiro o QR Code no terminal POS.';
-      return;
-    }
-    channel = mCh;
-    vaultKey = mKey;
+function handleAuthUpdatePacket(msg) {
+  if (!msg) return;
+  if (Array.isArray(msg.revoked_devices) && msg.revoked_devices.includes(deviceId)) {
+    revokeLocalDevice();
+    return;
   }
+  if (msg.revoked_device_id === deviceId) {
+    revokeLocalDevice();
+    return;
+  }
+  if (msg.device_auth_update && msg.device_auth_update.device_id === deviceId) {
+    const upd = msg.device_auth_update;
+    if (upd.approved && upd.device_token && upd.app_vault_key) {
+      localStorage.removeItem('pos_dev_revoked_' + channel);
+      localStorage.setItem('pos_dev_token_' + channel, upd.device_token);
+      localStorage.setItem('pos_app_vault_key_' + channel, upd.app_vault_key);
+      deviceToken = upd.device_token;
+      unlockAuthorizedApp(upd.app_vault_key);
+    } else if (upd.approved === false) {
+      revokeLocalDevice();
+    }
+  }
+}
 
-  if (!typedPin || typedPin.length < 4) {
+function revokeLocalDevice() {
+  localStorage.removeItem('pos_dev_token_' + channel);
+  localStorage.removeItem('pos_app_vault_key_' + channel);
+  localStorage.setItem('pos_dev_revoked_' + channel, '1');
+  if (!document.getElementById('gateBox')) {
+    window.location.reload();
+  } else {
+    const errEl = document.getElementById('gateErr');
+    if (errEl) {
+      errEl.className = 'status err';
+      errEl.textContent = '🚫 Acesso revogado pelo Administrador Central!';
+    }
+  }
+}
+
+async function sendDeviceAuthRequest() {
+  const errEl = document.getElementById('gateErr');
+  const btn = document.getElementById('btnReqAuth');
+  const devNameInput = document.getElementById('reqDeviceName');
+  const devName = (devNameInput ? devNameInput.value.trim() : '') || 'Telemóvel Gerente';
+
+  if (!devNameInput || !devNameInput.value.trim()) {
     errEl.className = 'status err';
-    errEl.textContent = '❌ Introduza o seu PIN de Gerente (mín. 4 dígitos).';
+    errEl.textContent = '❌ Escreva o seu nome (ex: João - Gerente) para o Administrador identificar o telemóvel.';
     return;
   }
 
-  btn.textContent = '⏳ A validar Certificado do POS e PIN...';
+  localStorage.setItem('pos_mgr_device_name', devName);
+  btn.textContent = '⏳ A enviar pedido ao Administrador...';
+
   try {
-    // 1. Validar Chave de Certificação do POS (PBKDF2 150.000x + HMAC-SHA256)
+    const ts = Math.floor(Date.now() / 1000).toString();
+    // 1. Enviar para o POS
+    await fetch('https://ntfy.sh/' + encodeURIComponent(channel), {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'request_device_auth',
+        device_id: deviceId,
+        device_name: devName,
+        ts
+      })
+    });
+
+    // 2. Enviar diretamente para o Cofre 2FA do Administrador (funciona mesmo com o POS desligado!)
+    const adminAlert = {
+      hostname: posName,
+      ip: 'Telemóvel ' + deviceId,
+      status: '📱 PEDIDO DE AUTORIZAÇÃO DE TELEMÓVEL',
+      applied: ['Gerente: ' + devName + ' (' + deviceId + ')'],
+      device_request: {
+        device_id: deviceId,
+        device_name: devName,
+        channel: channel,
+        pos_name: posName,
+        ts: new Date().toLocaleTimeString('pt-PT')
+      },
+      ts: new Date().toLocaleTimeString('pt-PT')
+    };
+    await fetch('https://ntfy.sh/' + FLEET_ACK_CHANNEL, {
+      method: 'POST',
+      body: JSON.stringify(adminAlert)
+    });
+
+    btn.textContent = '⏳ Pedido Enviado! A aguardar aprovação...';
+    errEl.className = 'status ok';
+    errEl.innerHTML = '✅ <b>Pedido enviado ao Administrador!</b><br>Mal o Administrador toque em <b>"Autorizar"</b> no Cofre Central, este ecrã abre automaticamente (e nunca mais pede códigos).';
+  } catch (e) {
+    btn.textContent = '📲 PEDIR AUTORIZAÇÃO AO ADMINISTRADOR';
+    errEl.className = 'status err';
+    errEl.textContent = '❌ Erro de ligação: ' + e.message;
+  }
+}
+
+async function unlockAuthorizedApp(vaultKey) {
+  try {
     const salt = b64ToUint8(APP_SALT_B64);
     const cipherBytes = b64ToUint8(APP_CIPHER_B64);
     const baseKey = await crypto.subtle.importKey(
@@ -235,29 +340,8 @@ async function unlockManagerApp() {
       'raw', macKey, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
     );
     const calcMac = bytesToHex(new Uint8Array(await crypto.subtle.sign('HMAC', hmacKey, cipherBytes)));
-    if (calcMac !== APP_MAC_HEX) {
-      btn.textContent = '🔓 VALIDAR PIN E DESBLOQUEAR APP';
-      errEl.className = 'status err';
-      errEl.textContent = '❌ Chave de Certificação inválida! Leia o QR Code no POS.';
-      return;
-    }
+    if (calcMac !== APP_MAC_HEX) return;
 
-    // 2. Validar PIN de Gerente contra o verificador criptográfico do POS
-    await refreshVerifierFromAck(channel);
-    const candidateHash = await sha256Hex(channel + '|AUTH_VERIFY|' + typedPin);
-    const defaultPinHash = await sha256Hex(channel + '|AUTH_VERIFY|1234');
-    const defaultTechHash = await sha256Hex(channel + '|AUTH_VERIFY|369369*');
-    const storedMgrVerifier = localStorage.getItem('pos_mgr_verifier_' + channel) || defaultPinHash;
-    const storedTechVerifier = localStorage.getItem('pos_tech_verifier_' + channel) || defaultTechHash;
-
-    if (candidateHash !== storedMgrVerifier && candidateHash !== storedTechVerifier) {
-      btn.textContent = '🔓 VALIDAR PIN E DESBLOQUEAR APP';
-      errEl.className = 'status err';
-      errEl.textContent = '❌ Acesso Negado: PIN de Gerente incorreto!';
-      return;
-    }
-
-    // 3. Desencriptar a interface da App
     const plainBytes = new Uint8Array(cipherBytes.length);
     let counter = 0;
     let offset = 0;
@@ -278,13 +362,10 @@ async function unlockManagerApp() {
     }
 
     const data = JSON.parse(new TextDecoder().decode(plainBytes));
-    localStorage.setItem('pos_channel', channel);
-    localStorage.setItem('pos_app_vault_key', vaultKey);
-    activeSessionPin = typedPin;
-
     document.getElementById('mainCard').innerHTML = data.html;
-    document.getElementById('pin').value = activeSessionPin;
     document.getElementById('posTitle').textContent = 'Terminal: ' + posName + ' (4G/5G/Wi-Fi)';
+    const ftr = document.getElementById('footerDevId');
+    if (ftr) ftr.textContent = 'Between Dimensions • Telemóvel Autorizado (' + deviceId + ')';
 
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     if (isStandalone && document.getElementById('installBtn')) {
@@ -293,17 +374,39 @@ async function unlockManagerApp() {
 
     loadLocalHistory();
     pollAckHistory(false);
-    startAckStream();
-  } catch (e) {
-    btn.textContent = '🔓 VALIDAR PIN E DESBLOQUEAR APP';
-    errEl.className = 'status err';
-    errEl.textContent = '❌ Erro ao desencriptar: ' + e.message;
-  }
+  } catch (e) {}
 }
 
-function lockAppSession() {
-  activeSessionPin = '';
-  window.location.reload();
+function startVoiceDictation() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const st = document.getElementById('status');
+  const vBtn = document.getElementById('voiceBtn');
+  if (!SR) {
+    if (st) {
+      st.className = 'status err';
+      st.textContent = 'ℹ️ Use o ícone de microfone do teclado do telemóvel para ditar.';
+    }
+    return;
+  }
+  const rec = new SR();
+  rec.lang = 'pt-PT';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  if (vBtn) vBtn.textContent = '🔴 A ouvir... Fale agora';
+  rec.onresult = (ev) => {
+    const spoken = ev.results[0][0].transcript;
+    const noteEl = document.getElementById('note');
+    if (noteEl && spoken) {
+      noteEl.value = (noteEl.value ? noteEl.value + ' ' : '') + spoken;
+    }
+  };
+  rec.onend = () => {
+    if (vBtn) vBtn.textContent = '🎙️ Ditar por Voz';
+  };
+  rec.onerror = () => {
+    if (vBtn) vBtn.textContent = '🎙️ Ditar por Voz';
+  };
+  rec.start();
 }
 
 function loadLocalHistory() {
@@ -354,8 +457,7 @@ function renderHistory() {
 }
 
 function processAckPayload(msg) {
-  if (msg.mgr_verifier && channel) localStorage.setItem('pos_mgr_verifier_' + channel, msg.mgr_verifier);
-  if (msg.tech_verifier && channel) localStorage.setItem('pos_tech_verifier_' + channel, msg.tech_verifier);
+  handleAuthUpdatePacket(msg);
   const ackEl = document.getElementById('ackText');
   const st = document.getElementById('status');
   if (Array.isArray(msg.history)) {
@@ -375,7 +477,7 @@ function processAckPayload(msg) {
 
 async function pollAckHistory(requestFromPos = false) {
   if (!channel) return;
-  if (requestFromPos && activeSessionPin) {
+  if (requestFromPos && deviceToken) {
     sendAction('sync_history', true);
   }
   try {
@@ -458,11 +560,6 @@ async function installPWA() {
   guide.style.display = (guide.style.display === 'block') ? 'none' : 'block';
 }
 
-function togglePinBox() {
-  const box = document.getElementById('pinBox');
-  if (box) box.style.display = (box.style.display === 'block') ? 'none' : 'block';
-}
-
 function toggleHistoryBox() {
   const box = document.getElementById('histBox');
   if (!box) return;
@@ -511,42 +608,37 @@ async function sendTechClearHistory() {
 
 async function sendAction(action, silent = false) {
   const st = document.getElementById('status');
-  const pin = activeSessionPin || (document.getElementById('pin') ? document.getElementById('pin').value.trim() : '');
   const text = (action === 'clear' || action === 'sync_history') ? '' : document.getElementById('note').value.trim();
   const priority = document.getElementById('priority').value;
   const font_size = parseInt(document.getElementById('font_size').value, 10);
   const popup = document.getElementById('popup').checked;
-  const newPin = document.getElementById('newPin').value.trim();
 
-  if (!channel || !pin) return;
+  if (!channel || !deviceToken) return;
   if (action === 'publish' && !text) {
     st.className = 'status err';
-    st.textContent = '❌ Escreva uma mensagem para os funcionários.';
-    return;
-  }
-  if (action === 'change_pin' && newPin.length < 4) {
-    st.className = 'status err';
-    st.textContent = '❌ O novo PIN deve ter pelo menos 4 dígitos/caracteres.';
+    st.textContent = '❌ Escreva ou dite uma mensagem para os funcionários.';
     return;
   }
 
   if (!silent) {
     st.className = 'status ok';
-    st.textContent = '⏳ A comunicar de forma segura com o POS...';
+    st.textContent = '⏳ A transmitir para o ecrã do POS...';
   }
 
   try {
     const ts = Math.floor(Date.now() / 1000).toString();
-    const payloadText = (action === 'change_pin') ? newPin : text;
-    const sigStr = channel + '|' + action + '|' + payloadText + '|' + ts + '|' + pin;
+    const sigStr = channel + '|' + action + '|' + text + '|' + ts + '|' + deviceToken;
     const sig = await sha256Hex(sigStr);
+    const devName = localStorage.getItem('pos_mgr_device_name') || 'Gerente Mobile';
 
     const packet = {
       action,
-      text: payloadText,
+      text,
       priority,
       font_size,
       popup,
+      device_id: deviceId,
+      device_name: devName,
       ts,
       sig
     };
@@ -557,22 +649,11 @@ async function sendAction(action, silent = false) {
     });
 
     if (r.ok && !silent) {
-      if (action === 'change_pin') {
-        activeSessionPin = newPin;
-        document.getElementById('pin').value = newPin;
-        const newVerifier = await sha256Hex(channel + '|AUTH_VERIFY|' + newPin);
-        localStorage.setItem('pos_mgr_verifier_' + channel, newVerifier);
-        document.getElementById('newPin').value = '';
-        document.getElementById('pinBox').style.display = 'none';
-        st.className = 'status ok';
-        st.textContent = '✅ Novo PIN de Gerente guardado no POS!';
-      } else {
-        st.className = 'status ok';
-        st.textContent = action === 'clear'
-          ? '✅ Ordem de limpeza enviada ao POS!'
-          : '✅ Aviso transmitido! A aguardar confirmação do POS...';
-        if (action === 'clear') document.getElementById('note').value = '';
-      }
+      st.className = 'status ok';
+      st.textContent = action === 'clear'
+        ? '✅ Ordem de limpeza enviada ao POS!'
+        : '✅ Aviso transmitido! A aguardar confirmação do POS...';
+      if (action === 'clear') document.getElementById('note').value = '';
     } else if (!r.ok && !silent) {
       st.className = 'status err';
       st.textContent = '❌ Erro na ligação (' + r.status + ')';
